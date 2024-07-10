@@ -5,6 +5,10 @@ contract Deployer {
     string public greeting;
 
     /* This exercise assumes you know how constructors works.
-    The contract must have a constructor with a string argument
-    that sets the greeting variable, if not it reverts. */
+        The contract must have a constructor with a string argument
+        that sets the greeting variable, if not it reverts. 
+    */
+    constructor(string memory _greet){
+        greeting = _greet;
+    }
 }
