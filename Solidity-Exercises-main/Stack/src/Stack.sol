@@ -15,11 +15,42 @@ contract Stack {
             e. `getStack` function returns the stack.
     */
 
-    uint256[] stack;
+    uint256[] public stack;
 
     constructor(uint256[] memory _stack) {
         stack = _stack;
     }
 
     // your code here
+    // a. `push` function appends a new value to the end of the array.
+    function push(uint256 value) public {
+        stack.push(value);
+    }
+
+    // b. `peek` function returns the last element of the array without removing it, 
+    // but first checks if the stack is not empty.
+    function peek() public view returns (uint256) {
+        require(stack.length > 0, "Stack is empty");
+        return stack[stack.length - 1];
+    }
+
+    // c. `pop` function returns the last element of the array and removes it from 
+    // the stack, but also checks if the stack is not empty.
+    function pop() public returns (uint256) {
+        require(stack.length > 0, "Stack is empty");
+        uint256 value = stack[stack.length - 1];
+        stack.pop();
+        return value;
+    }
+
+    // d. `size` function returns the length of the array, which corresponds to
+    // the number of elements in the stack.
+    function size() public view returns (uint256) {
+        return stack.length;
+    }
+
+    // e. `getStack` function returns the stack.
+    function getStack() public view returns (uint256[] memory) {
+        return stack;
+    }
 }
