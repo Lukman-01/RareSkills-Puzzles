@@ -10,5 +10,7 @@ contract Donations {
         // the person donated
         // don't forget a person can donate
         // multiple times!
+
+        amountDonated[msg.sender] += msg.value;
     }
 }
