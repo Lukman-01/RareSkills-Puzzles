@@ -2,7 +2,17 @@
 pragma solidity ^0.8.13;
 
 contract TimelockEscrow {
+
     address public seller;
+    uint256 public constant ESCROW_DURATION = 3 days;
+
+    struct Escrow {
+        uint256 amount;
+        uint256 startTime;
+        bool active;
+    }
+
+    mapping(address => Escrow) public escrows;
 
     /**
      * The goal of this exercise is to create a Time lock escrow.
@@ -21,6 +31,15 @@ contract TimelockEscrow {
      */
     function createBuyOrder() external payable {
         // your code here
+        require(msg.value > 0, "Your bet must be greater than 0");
+        require(!escrows[msg.sender].active, "Active escrow already exists");
+
+        escrows[msg.sender] = Escrow({
+            amount: msg.value,
+            startTime: block.timestamp,
+            active: true
+        });
+
     }
 
     /**
@@ -28,6 +47,15 @@ contract TimelockEscrow {
      */
     function sellerWithdraw(address buyer) external {
         // your code here
+        require(msg.sender == seller, "Only the seller can withdraw");
+        Escrow storage escrow = escrows[buyer];
+        require(escrow.active, "No active escrow for this buyer");
+        require(block.timestamp >= escrow.startTime + ESCROW_DURATION, "Escrow period has not ended");
+
+        uint256 amount = escrow.amount;
+        escrow.amount = 0;
+        escrow.active = false;
+        payable(seller).transfer(amount);
     }
 
     /**
@@ -35,10 +63,19 @@ contract TimelockEscrow {
      */
     function buyerWithdraw() external {
         // your code here
+        Escrow storage escrow = escrows[msg.sender];
+        require(escrow.active, "No active escrow for this buyer");
+        require(block.timestamp < escrow.startTime + ESCROW_DURATION, "Escrow period has ended");
+
+        uint256 amount = escrow.amount;
+        escrow.amount = 0;
+        escrow.active = false;
+        payable(msg.sender).transfer(amount);
     }
 
     // returns the escrowed amount of @param buyer
     function buyerDeposit(address buyer) external view returns (uint256) {
         // your code here
+        return escrows[buyer].amount;
     }
 }
