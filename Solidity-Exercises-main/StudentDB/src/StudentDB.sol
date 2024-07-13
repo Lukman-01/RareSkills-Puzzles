@@ -2,26 +2,33 @@
 pragma solidity ^0.8.13;
 
 contract StudentDB {
-    /* This exercise assumes you know how structs works.
-   create a struct `Student` for a student who's name is `John` and age is `12`.
-   Return John's age in the function below */
+    /* This exercise assumes you know how structs work.
+       Create a struct `Student` for a student whose name is `John` and age is `12`.
+       Return John's age in the function below */
 
     struct Student {
         string name;
         uint256 age;
     }
 
+    Student public student;
+
     constructor() {
         createStudent("John", 12);
     }
 
-    // create Student's data
+    // Create Student's data
     function createStudent(string memory _name, uint256 _age) public {
-        // your code here
+        student = Student(_name, _age);
     }
 
-    // return struct data
+    // Return John's age
+    function getJohnAge() public view returns (uint256) {
+        return student.age;
+    }
+
+    // Return the entire struct data
     function getEntireStruct() public view returns (Student memory) {
-        // your code here
+        return student;
     }
 }
