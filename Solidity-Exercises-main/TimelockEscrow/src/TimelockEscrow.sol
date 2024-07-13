@@ -29,53 +29,63 @@ contract TimelockEscrow {
      * escrows msg.value for 3 days which buyer can withdraw at anytime before 3 days but afterwhich only seller can withdraw
      * should revert if an active escrow still exist or last escrow hasn't been withdrawn
      */
+    // Function to create a buy order with escrow
     function createBuyOrder() external payable {
-        // your code here
+        // Ensure the deposited amount is greater than 0
         require(msg.value > 0, "Your bet must be greater than 0");
+
+        // Ensure no active escrow exists for the caller
         require(!escrows[msg.sender].active, "Active escrow already exists");
 
+        // Create a new escrow entry for the caller
         escrows[msg.sender] = Escrow({
             amount: msg.value,
             startTime: block.timestamp,
             active: true
         });
-
     }
 
-    /**
-     * allows seller to withdraw after 3 days of the escrow with @param buyer has passed
-     */
+    // Function for the seller to withdraw after 3 days
     function sellerWithdraw(address buyer) external {
-        // your code here
+        // Ensure only the seller can withdraw
         require(msg.sender == seller, "Only the seller can withdraw");
+
+        // Retrieve the escrow details for the specified buyer
         Escrow storage escrow = escrows[buyer];
+
+        // Ensure the escrow is active
         require(escrow.active, "No active escrow for this buyer");
+
+        // Ensure the escrow period has ended
         require(block.timestamp >= escrow.startTime + ESCROW_DURATION, "Escrow period has not ended");
 
+        // Transfer the escrowed amount to the seller
         uint256 amount = escrow.amount;
         escrow.amount = 0;
         escrow.active = false;
         payable(seller).transfer(amount);
     }
 
-    /**
-     * allowa buyer to withdraw at anytime before the end of the escrow (3 days)
-     */
+    // Function for the buyer to withdraw at any time before the end of the escrow period
     function buyerWithdraw() external {
-        // your code here
+        // Retrieve the escrow details for the caller
         Escrow storage escrow = escrows[msg.sender];
+
+        // Ensure the escrow is active
         require(escrow.active, "No active escrow for this buyer");
+
+        // Ensure the escrow period has not ended
         require(block.timestamp < escrow.startTime + ESCROW_DURATION, "Escrow period has ended");
 
+        // Transfer the escrowed amount to the buyer
         uint256 amount = escrow.amount;
         escrow.amount = 0;
         escrow.active = false;
         payable(msg.sender).transfer(amount);
     }
 
-    // returns the escrowed amount of @param buyer
+    // Function to return the escrowed amount for a specified buyer
     function buyerDeposit(address buyer) external view returns (uint256) {
-        // your code here
         return escrows[buyer].amount;
     }
 }
