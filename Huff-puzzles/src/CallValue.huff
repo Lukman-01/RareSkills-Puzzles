@@ -9,5 +9,16 @@
 */
 
 #define macro MAIN() = takes(0) returns(0) {
-    
+    // Retrieve the amount of ether sent with the call
+    CALLVALUE
+    // Place the value on the stack, ready for return
+    // Specify the return offset and size, which is 32 bytes for uint256
+    0x00
+    0x20
+    // Use MSTORE to store the CALLVALUE at memory position 0
+    MSTORE
+    // Return the 32 bytes from memory starting at offset 0
+    0x00
+    0x20
+    RETURN
 }
