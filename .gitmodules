@@ -1,0 +1,3 @@
+[submodule "Huff-puzzles/lib/forge-std"]
+	path = Huff-puzzles/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
