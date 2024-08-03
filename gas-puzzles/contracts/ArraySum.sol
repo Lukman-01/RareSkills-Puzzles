@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.15;
 
-contract ArraySum {
+contract OptimizedArraySum {
     // Do not modify this
     uint256[] array;
 
