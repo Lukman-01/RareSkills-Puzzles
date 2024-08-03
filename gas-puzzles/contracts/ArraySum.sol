@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.15;
 
-contract OptimizedArraySum {
+contract ArraySum {
     // Do not modify this
     uint256[] array;
 
@@ -11,14 +11,16 @@ contract OptimizedArraySum {
         array = _array;
     }
 
-    // optimize this function
+    // Function to calculate the sum of elements in the array
     function getArraySum() external view returns (uint256) {
-        uint256 sum;
-        uint256 length = array.length;
+        uint256 sum; // Variable to store the sum of array elements
+        uint256 length = array.length; // Get the length of the array and store it in a local variable
+
+        // Loop through each element in the array
         for (uint256 i = 0; i < length; i++) {
-            sum += array[i];
+            sum += array[i]; // Add the value of each array element to the sum
         }
 
-        return sum;
+        return sum; // Return the total sum of the array elements
     }
 }
