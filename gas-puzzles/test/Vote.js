@@ -106,8 +106,8 @@ describe('Vote', async function () {
             voteCount = await instance.getVoteCount(PROPOSAL_INDEX);
             expect(voteCount).to.equal(1);
 
-            await expect(instance.vote(PROPOSAL_INDEX)).to.be.revertedWith(
-                'already voted'
+            await expect(instance.vote(PROPOSAL_INDEX)).to.be.revertedWithCustomError(
+                instance, 'AlreadyVoted'
             );
         });
     });
