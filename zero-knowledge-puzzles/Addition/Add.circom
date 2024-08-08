@@ -6,4 +6,15 @@ template Add() {
     in[0] === in[1] + in[2];
 }
 
+/*
+Alternative method to add numbers
+template Add(){
+    signal input a;
+    signal input b;
+    signal output c;
+
+    c <== a + b;
+}
+*/
+
 component main  = Add();
