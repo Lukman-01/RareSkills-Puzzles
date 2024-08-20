@@ -7,16 +7,27 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 
 template QuadraticEquation() {
     signal input x;     // x value
-    signal input a;     // coeffecient of x^2
-    signal input b;     // coeffecient of x 
+    signal input a;     // coefficient of x^2
+    signal input b;     // coefficient of x 
     signal input c;     // constant c in equation
     signal input res;   // Expected result of the equation
-    signal output out;  // If res is correct , then return 1 , else 0 . 
+    signal output out;  // If res is correct, return 1; else return 0.
 
-    // your code here
+    signal computedRes;  // Intermediate signal for the computed result
+
+    // Compute ax^2 + bx + c
+    computedRes <== a * x * x + b * x + c;
+
+    // Comparator: Check if computed result equals the provided result
+    component isEqual = IsEqual();
+
+    isEqual.in[0] <== computedRes;
+    isEqual.in[1] <== res;
+
+    // Set the output based on the comparison
+    out <== isEqual.out;
 }
 
-component main  = QuadraticEquation();
-
+component main = QuadraticEquation();
 
 
