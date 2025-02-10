@@ -15,6 +15,7 @@ contract Overmint1_ERC1155 is ERC1155 {
         require(amountMinted[msg.sender][id] <= 3, "max 3 NFTs");
         totalSupply[id]++;
         _mint(msg.sender, id, 1, data);
+        //@audit-issue external call before update -> Reentrancy
         amountMinted[msg.sender][id]++;
     }
 

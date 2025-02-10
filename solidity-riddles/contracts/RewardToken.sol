@@ -26,6 +26,8 @@ contract RewardToken is ERC20Capped {
 
 contract NftToStake is ERC721 {
     constructor(address attacker) ERC721("NFT", "NFT") {
+        //@audit-info no check for address zero
+        //@audit-info name and symbol should not be the same
         _mint(attacker, 42);
     }
 }
@@ -33,7 +35,7 @@ contract NftToStake is ERC721 {
 contract Depositoor is IERC721Receiver {
     IERC721 public nft;
     IERC20 public rewardToken;
-    uint256 public constant REWARD_RATE = 10e18 / uint256(1 days);
+    uint256 public constant REWARD_RATE = 10e18 / uint256(1 days); //@audit-info 10 tokens per day
     bool init;
 
     constructor(IERC721 _nft) {
@@ -50,7 +52,9 @@ contract Depositoor is IERC721Receiver {
     mapping(address => Stake) public stakes;
 
     function setRewardToken(IERC20 _rewardToken) external {
+        //@audit-issue no check for input validation ifreward token exist or is the intended one.
         require(!init);
+        //@audit-issue init is already set to true, this is tautology
         init = true;
         rewardToken = _rewardToken;
     }
@@ -75,6 +79,7 @@ contract Depositoor is IERC721Receiver {
             stakes[msg.sender].tokenId == _tokenId && _tokenId != 0,
             "not your NFT"
         );
+        //@audit-issue Reentrancy, payout befor stake
         payout(msg.sender);
         stakes[msg.sender].depositTime = block.timestamp;
     }
@@ -85,6 +90,7 @@ contract Depositoor is IERC721Receiver {
             "not your NFT"
         );
         payout(msg.sender);
+        //@audit-issue Reentrancy, payout befor stake
         nft.safeTransferFrom(address(this), msg.sender, _tokenId);
         delete stakes[msg.sender];
     }

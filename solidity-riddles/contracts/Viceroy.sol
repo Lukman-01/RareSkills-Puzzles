@@ -61,6 +61,7 @@ contract Governance {
         require(viceroys[viceroy].appointedBy == id, "only the appointer can depose");
 
         idUsed[id] = false;
+        //@audit-issue votes from deposed viceroy's approved voters still count towards proposals
         delete viceroys[viceroy];
     }
 
@@ -79,10 +80,13 @@ contract Governance {
         require(viceroys[msg.sender].appointedBy != 0, "not a viceroy");
         require(viceroys[msg.sender].approvedVoter[voter], "cannot disapprove an unapproved address");
         viceroys[msg.sender].numAppointments += 1;
+
+        //@audit-issue votes remain counted even after voter is disapproved
         delete viceroys[msg.sender].approvedVoter[voter];
     }
 
     function createProposal(address viceroy, bytes calldata proposal) external {
+        //@audit-issue the use of || (logical OR) is not safe here
         require(
             viceroys[msg.sender].appointedBy != 0 || viceroys[viceroy].approvedVoter[msg.sender],
             "sender not a viceroy or voter"
@@ -103,6 +107,7 @@ contract Governance {
     }
 
     function executeProposal(uint256 proposal) external {
+        //@audit-issue lack of acces control
         require(proposals[proposal].votes >= 10, "Not enough votes");
         (bool res, ) = address(communityWallet).call(proposals[proposal].data);
         require(res, "call failed");
@@ -121,6 +126,8 @@ contract CommunityWallet {
         (bool res, ) = target.call{value: value}(data);
         require(res, "call failed");
     }
-
     fallback() external payable {}
+
+
+    //@audit-issue funds may be locked forever. no withdraw function
 }
