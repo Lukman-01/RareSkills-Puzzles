@@ -42,6 +42,8 @@ contract NAME_SERVICE_BANK {
     ) public payable {
         require(msg.value == 1 ether, "Flat fee for subcription of username is 1 ether");
         require(bytes(newUsername).length + obfuscationDegree <= 31, "Max name size is 31 bytes");
+
+        //@audit-issue array acces wrongly which gives user a lot of time
         require(_usernameSubscriptionDuration[1] <= block.timestamp, "Start time must be now or earlier");
         require(
             _usernameSubscriptionDuration[0] > _usernameSubscriptionDuration[1] &&
@@ -55,6 +57,7 @@ contract NAME_SERVICE_BANK {
 
         // make last username available if its not empty username
         if (lastUsernameHash != KECCAK_0X) isUsedUsername[lastUsername] = false;
+        //@audit-issue Inconsistent username availability check before and after obfuscation
 
         // revert if old username is already being used
         require(!isUsedUsername[newUsername], "User name is used");
@@ -78,14 +81,17 @@ contract NAME_SERVICE_BANK {
         addressOf[_newUsername] = msg.sender;
         // set new username as used name
         isUsedUsername[usernameOf[msg.sender]] = true;
+        //@audit-issue Inconsistent username availability check before and after obfuscation
         // set subscription duration of new name
         usernameSubscriptionDuration[_newUsername] = SubscriptionDuration({
+            //@audit-issue Potential time manipulation due to incorrect array index access
             end: _usernameSubscriptionDuration[0],
             start: _usernameSubscriptionDuration[1]
         });
 
         // Migrate balance from old username to new username
         _balanceOf[_newUsername] += _balanceOf[lastUsername];
+        //@audit-issue Potential unauthorized balance transfer during username change
         delete _balanceOf[lastUsername];
 
         // send payment to owner

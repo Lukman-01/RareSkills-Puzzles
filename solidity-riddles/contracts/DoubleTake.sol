@@ -14,7 +14,9 @@ contract DoubleTake {
         bytes memory signature = abi.encodePacked(v, r, s);
 
         require(signer == ecrecover(hash_, v, r, s), "signature not accepted");
+        //@audit-issue Can replay signature with modified (s, v) pair, the catch below is not enough to prevent replay
         require(!used[signature], "signature already used");
+        //@audit-issue suppose set signature to used before transfer, then the contract will be drained
         used[signature] = true;
 
         (bool ok, ) = user.call{value: amount}("");
