@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.15;
 
 contract DumbBank {
@@ -8,9 +9,11 @@ contract DumbBank {
     }
 
     function withdraw(uint256 amount) public {
+        //@audit-issue no access control
         require(amount <= balances[msg.sender], "not enough funds");
         (bool ok, ) = msg.sender.call{value: amount}("");
         require(ok);
+        //@audit-issue no reentrancy guard, no check-effects-interactions pattern
         unchecked {
             balances[msg.sender] -= amount;
         }
