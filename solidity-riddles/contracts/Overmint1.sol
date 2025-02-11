@@ -14,6 +14,7 @@ contract Overmint1 is ERC721 {
         require(amountMinted[msg.sender] <= 3, "max 3 NFTs");
         totalSupply++;
         _safeMint(msg.sender, totalSupply);
+        //@audit-issue suppose increase amountMinted before transfer
         amountMinted[msg.sender]++;
     }
 
