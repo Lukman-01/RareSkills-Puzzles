@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.15;
 
 contract AssignVotes {
@@ -24,6 +25,8 @@ contract AssignVotes {
         bytes calldata data,
         uint256 value
     ) external {
+        //@audit-issue lack of access control to this function
+
         proposals[proposalCounter] = Proposal({
             target: target,
             data: data,
@@ -34,6 +37,7 @@ contract AssignVotes {
         unchecked {
             ++proposalCounter;
         }
+        //@audit-issue multiple proposal can be created by the same address.
     }
 
     function removeAssignment(address _voter) public {
@@ -41,13 +45,16 @@ contract AssignVotes {
         require(assignedBy[_voter] != address(0), "not assigned");
 
         assignedBy[_voter] = address(0);
+        //@audit-issue incorrect increment. should be decremented
         amountAssigned[msg.sender] += 1;
     }
 
     function assign(address _voter) public {
         require(amountAssigned[msg.sender] >= -5, "you ran out of assignments");
         assignedBy[_voter] = msg.sender;
+        //@audit-issue incorrect decrement. should be incremented
         amountAssigned[msg.sender] -= 1;
+        //@audit-issue no check for assigning vote to oneself
     }
 
     function vote(uint256 proposal) public {
@@ -59,6 +66,7 @@ contract AssignVotes {
     }
 
     function execute(uint256 proposal) public {
+        //@audit-issue lack of access control to this function
         require(proposals[proposal].votes >= 10, "not enough votes");
         Proposal storage p = proposals[proposal];
         address target = p.target;
