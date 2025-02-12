@@ -10,6 +10,7 @@ contract Wallet {
     }
 
     function sendEther(address destination, uint256 amount) public {
+        //@audit-issue Any user can bypass this by calling through the Forwarder contract. Verify the original tx.sender
         require(msg.sender == forwarder, "sender must be forwarder contract");
         (bool success, ) = destination.call{value: amount}("");
         require(success, "failed");
@@ -18,6 +19,7 @@ contract Wallet {
 
 contract Forwarder {
     function functionCall(address a, bytes calldata data) public {
+        //@audit-issue lack of access control
         (bool success, ) = a.call(data);
         require(success, "forward failed");
     }
