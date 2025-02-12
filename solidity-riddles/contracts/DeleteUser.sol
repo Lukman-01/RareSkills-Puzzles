@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.15;
 
 /**
@@ -23,9 +24,13 @@ contract DeleteUser {
         require(user.addr == msg.sender);
         uint256 amount = user.amount;
 
+        //@audit-issue assigned the last index data to the current last index. REENTRANCY
+
         user = users[users.length - 1];
+        //@audit-issue last element value is being deleted.
         users.pop();
 
         msg.sender.call{value: amount}("");
+        //@audit-issue The contract does not check if the call was successful.
     }
 }
