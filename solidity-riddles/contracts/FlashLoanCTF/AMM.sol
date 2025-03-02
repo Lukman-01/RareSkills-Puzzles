@@ -40,8 +40,8 @@ contract AMM {
         address to
     ) external returns (uint ethAmountOut) {
         // TAKE advantage of "donations" and avoid locked tokens
-        uint256 lendTokenAmountIn = lendToken.balanceOf(address(this)) -
-            lendTokenReserve;
+        uint256 lendTokenAmountIn = lendToken.balanceOf(address(this)) - lendTokenReserve;
+        //@audit-issue This assumes any excess LendTokens in the contract (beyond lendTokenReserve) are part of the swap, even if they weren’t sent by the caller.
         require(lendTokenAmountIn > 0, "Amount in cannot be zero");
 
         ethAmountOut = getLendTokenToEthPrice(lendTokenAmountIn);
@@ -58,6 +58,7 @@ contract AMM {
     ) external payable returns (uint lendTokenAmountOut) {
         // TAKE advantage of "donations" and avoid locked tokens
         uint256 ethAmountIn = address(this).balance - ethReserve;
+        //@audit-issue Similarly, this assumes any excess ETH in the contract (beyond ethReserve) is part of the swap, even if it wasn’t sent via msg.value in the transaction.
         require(ethAmountIn > 0, "Amount should be greater than zero");
 
         lendTokenAmountOut = getEthToLendTokenPrice(ethAmountIn);
