@@ -40,6 +40,7 @@ contract Challenge02 {
     }
 
     function approve(address owner, address spender, uint256 amount) public {
+        //@audit-issue Anyone can approve tokens from any address (not restricted to msg.sender)
         allowance[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
