@@ -37,6 +37,7 @@ contract Challenge03 {
     }
 
     function burn(address account, uint256 value) public {
+        //@audit-issue function is public and allows anyone to burn tokens from any account without approval or ownership!
         require(account != address(0), "Invalid burner");
         uint256 accountBalance = _balances[account];
         require(accountBalance >= value, "Insufficient balance");
