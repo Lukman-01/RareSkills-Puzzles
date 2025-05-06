@@ -84,6 +84,7 @@ contract Challenge04 {
     }
 
     function transferFrom(address from, address to, uint256 value) public returns (bool) {
+        //@audit-issue paused mechanism doesn't apply to transferFrom()
         _spendAllowance(from, msg.sender, value);
         _transfer(from, to, value);
         return true;
