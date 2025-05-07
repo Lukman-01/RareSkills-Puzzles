@@ -58,12 +58,14 @@ contract Challenge12 {
     }
 
     function gift(address to, uint256 amount) public onlyOwner {
+        //@audit-issue totalSupply not updated by gift
         balanceOf[to] += amount;
 
         emit Transfer(address(0), to, amount);
     }
 
     function transfer(address to, uint256 amount) public virtual returns (bool) {
+        //@audit-issue lack of sufficient validation in the transfer function
         balanceOf[msg.sender] -= amount;
 
         unchecked {
@@ -76,6 +78,8 @@ contract Challenge12 {
     }
 
     function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
+        //@audit-issue lack of sufficient validation in the transferFrom function.
+        //Allowance validation is missing, sufficient balance check is missing...
         uint256 allowed = allowance[from][msg.sender]; 
 
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
