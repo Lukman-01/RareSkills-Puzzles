@@ -91,6 +91,7 @@ contract Challenge07 {
     }
 
     function mint(address to, uint256 value) public {
+        //@audit-issue mint function lacks access control, allowing anyone to mint tokens.
         _mint(to, value);
     }
 
