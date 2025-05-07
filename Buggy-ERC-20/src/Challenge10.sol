@@ -42,6 +42,7 @@ contract Challenge10 {
     }
 
     modifier onlyOwner() {
+        //@audit-issue use of == instead of = breaks this modifier
         msg.sender == owner;
         _;
     }
