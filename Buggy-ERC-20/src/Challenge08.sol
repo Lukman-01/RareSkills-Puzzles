@@ -83,6 +83,7 @@ contract Challenge08 {
     }
 
     function burn(uint256 value) public {
+        //@audit-issue no update of totalSupply
         _balances[msg.sender] -= value;
         emit Transfer(msg.sender, address(0), value);
     }
