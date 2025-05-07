@@ -70,6 +70,7 @@ contract Challenge06 {
     }
 
     function approve(address spender, uint256 value) public returns (bool) {
+        //@audit-issue approve function lacks the blacklist check, allowing a blacklisted address to create an allowance.
         _approve(msg.sender, spender, value);
         return true;
     }
