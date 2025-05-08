@@ -62,6 +62,9 @@ contract Challenge14 {
     }
 
     function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
+        //@audit-issue The allowance update logic is incorrect. 
+        // It only updates allowance[from][msg.sender] when allowed == type(uint256).max, 
+        // subtracting amount from the maximum value (which is still effectively unlimited)
         uint256 allowed = allowance[from][msg.sender];
 
         if (allowed == type(uint256).max) allowance[from][msg.sender] = allowed - amount;
