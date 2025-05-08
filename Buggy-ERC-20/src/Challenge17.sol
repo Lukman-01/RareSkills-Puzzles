@@ -96,6 +96,8 @@ contract Challenge17 {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
 
+        //@audit-issue Checks the recipient’s balance (_balances[to] >= value)
+        // instead of the sender’s, preventing transfers to accounts with insufficient or zero balances.
         uint256 toBalance = _balances[to];
         require(toBalance >= value, "ERC20: transfer amount exceeds balance");
 
