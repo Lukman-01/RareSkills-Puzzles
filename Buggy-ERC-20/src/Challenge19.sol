@@ -101,7 +101,9 @@ contract Challenge19 {
     
         uint256 fromBalance = _balances[from];
         uint256 toBalance = _balances[to];
-    
+        
+        //@audit-issue _beforeTokenTransfer hook is called before the balance check (require(fromBalance >= amount))
+        //This hook is virtual, meaning a derived contract can override it.
         _beforeTokenTransfer(from, to, amount);
     
         require(
