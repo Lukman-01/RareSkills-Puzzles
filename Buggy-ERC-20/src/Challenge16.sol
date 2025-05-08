@@ -68,6 +68,8 @@ contract Challenge16 {
     }
 
     function approve(address spender, uint256 value) public returns (bool) {
+        //@audit-issue nothing approved, also anybody can call approve
+        //_approve(msg.sender, spender, value);
         emit Approval(msg.sender, spender, value);
         return true;
     }
