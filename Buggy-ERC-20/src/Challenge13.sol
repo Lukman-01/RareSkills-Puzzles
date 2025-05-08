@@ -41,6 +41,8 @@ contract Challenge13 {
     }
 
     function approve(address spender, uint256 amount) public virtual returns (bool) {
+        //@audit-issue incorrect approval logic
+        //The approval logic is incorrect, it should be allowance[msg.sender][spender] = amount;
         allowance[spender][msg.sender] = amount;
 
         emit Approval(msg.sender, spender, amount);
@@ -49,6 +51,7 @@ contract Challenge13 {
     }
 
     function transfer(address to, uint256 amount) public virtual returns (bool) {
+        //@audit-issue lack of sufficient validation in the transfer function
         balanceOf[msg.sender] -= amount;
 
         unchecked {
@@ -61,6 +64,8 @@ contract Challenge13 {
     }
 
     function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
+        //@audit-issue lack of sufficient validation in the transferFrom function.
+        //Allowance validation is missing, sufficient balance check is missing...
         uint256 allowed = allowance[from][msg.sender]; 
 
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
