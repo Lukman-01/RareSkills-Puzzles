@@ -3,6 +3,21 @@ pragma solidity ^0.8.13;
 
 import "./interfaces/IUniswapV2Pair.sol";
 
+interface IUniswapV2Router {
+    function addLiquidityETH(
+        address token,
+        uint256 amountTokenDesired,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline
+    ) external payable returns (uint256 amountToken, uint256 amountETH, uint256 liquidity);
+}
+
+interface IERC20 {
+    function approve(address spender, uint256 amount) external returns (bool);
+}
+
 contract AddLiquidWithRouter {
     /**
      *  ADD LIQUIDITY WITH ROUTER EXERCISE
@@ -19,27 +34,27 @@ contract AddLiquidWithRouter {
     }
 
     function addLiquidityWithRouter(address usdcAddress, uint256 deadline) public {
-        // your code start here
+        // Contract's initial balances
+        uint256 usdcAmountDesired = 1000 * 10 ** 6; // 1000 USDC (6 decimals)
+        uint256 ethAmountDesired = 1 * 10 ** 18;    // 1 ETH (18 decimals)
+
+        // Approve router to spend USDC
+        IERC20(usdcAddress).approve(router, usdcAmountDesired);
+
+        // Set slippage protection (e.g., 1% below desired amounts)
+        uint256 usdcAmountMin = (usdcAmountDesired * 99) / 100; // 99% of USDC
+        uint256 ethAmountMin = (ethAmountDesired * 99) / 100;   // 99% of ETH
+
+        // Add liquidity to USDC/ETH pool via router
+        IUniswapV2Router(router).addLiquidityETH{value: ethAmountDesired}(
+            usdcAddress,
+            usdcAmountDesired,
+            usdcAmountMin,
+            ethAmountMin,
+            msg.sender,
+            deadline
+        );
     }
 
     receive() external payable {}
-}
-
-interface IUniswapV2Router {
-    /**
-     *     token: the usdc address
-     *     amountTokenDesired: the amount of USDC to add as liquidity.
-     *     amountTokenMin: bounds the extent to which the ETH/USDC price can go up before the transaction reverts. Must be <= amountUSDCDesired.
-     *     amountETHMin: bounds the extent to which the USDC/ETH price can go up before the transaction reverts. Must be <= amountETHDesired.
-     *     to: recipient address to receive the liquidity tokens.
-     *     deadline: timestamp after which the transaction will revert.
-     */
-    function addLiquidityETH(
-        address token,
-        uint256 amountTokenDesired,
-        uint256 amountTokenMin,
-        uint256 amountETHMin,
-        address to,
-        uint256 deadline
-    ) external payable returns (uint256 amountToken, uint256 amountETH, uint256 liquidity);
 }
