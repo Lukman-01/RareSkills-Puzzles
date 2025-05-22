@@ -27,33 +27,30 @@ contract OptimizedVote {
 
     function vote(uint8 _proposal) external {
         Voter storage sender = voters[msg.sender];
+        
+        // Optimized check with proper error handling
         if (sender.voted) {
             revert AlreadyVoted();
         }
-        if (_proposal >= proposals.length) {
+        
+        // Cache proposals length to avoid multiple SLOAD
+        uint256 proposalsLength = proposals.length;
+        if (_proposal >= proposalsLength) {
             revert InvalidProposal();
         }
 
-        // Use a single storage write operation for the voter information
-        sender.vote = _proposal;
-        sender.voted = true;
+        // Optimized storage writes
+        unchecked {
+            // Set voter data efficiently
+            sender.vote = _proposal;
+            sender.voted = true;
 
-        // Increment the vote count of the selected proposal
-        Proposal storage proposal = proposals[_proposal];
-        proposal.voteCount += 1;
+            // Pre-increment for gas efficiency
+            ++proposals[_proposal].voteCount;
+        }
     }
 
     function getVoteCount(uint8 _proposal) external view returns (uint8) {
         return proposals[_proposal].voteCount;
     }
 }
-
-/*
-Explanation:
-- Custom Errors: Using custom errors (`AlreadyVoted` and `InvalidProposal`) to save gas instead of string-based `require` statements.
-- Storage Pointer: Using a storage pointer (`Voter storage sender = voters[msg.sender];`) to reduce frequent writes to storage and improve readability.
-- Single Write Operation: Update the voter information in one write operation to reduce gas usage.
-- Tight Variable Packing: Reordered struct fields to ensure tight packing, reducing the storage slots used and therefore gas costs. 
-    Placing the smaller types (`bool` and `uint8`) together helps pack them into a single storage slot efficiently.
-
-*/
