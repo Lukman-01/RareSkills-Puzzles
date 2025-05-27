@@ -1,4 +1,3 @@
-
 /**
  *  CALLDATA_LENGTH HUFF EXERCISE
  *
@@ -9,5 +8,10 @@
 */
 
 #define macro MAIN() = takes(0) returns(0) {
-    
+    calldatasize    // Get the size of calldata (pushes length onto stack)
+    0x00            // Push memory offset 0 onto stack
+    mstore          // Store the calldata size at memory position 0
+    0x20            // Push 32 bytes (0x20) onto stack (size to return)
+    0x00            // Push memory offset 0 onto stack (where our data is stored)
+    return          // Return 32 bytes from memory position 0
 }
