@@ -1,4 +1,3 @@
-
 /**
  *  REVERT_CUSTOM HUFF EXERCISE
  *
@@ -14,5 +13,7 @@
 #define error OnlyHuff()
 
 #define macro MAIN() = takes(0) returns(0) {
-    
+    __ERROR(OnlyHuff)   // Get the 4-byte selector for OnlyHuff() error
+    0x00 mstore         // Store the error selector at memory position 0x00
+    0x04 0x00 revert    // Revert with 4 bytes of data starting from memory position 0x00
 }

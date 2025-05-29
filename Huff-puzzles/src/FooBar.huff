@@ -1,4 +1,3 @@
-
 /** 
  *  FOO_BAR HUFF EXERCISE
  *
@@ -11,10 +10,48 @@
  *  NOTICE: The contract should revert when an unrecognized function is called
  */
 
- #define function foo() payable returns(uint256)
- #define function bar() payable returns(uint256)
-
+#define function foo() payable returns(uint256)
+#define function bar() payable returns(uint256)
 
 #define macro MAIN() = takes(0) returns(0) {
+    // Load calldata size
+    0x00 calldatasize 
+    // Check if calldata is at least 4 bytes (function selector)
+    0x04 lt iszero valid_calldata jumpi
+    
+    // Revert if calldata is too short
+    0x00 0x00 revert
+    
+    valid_calldata:
+        // Load the function selector (first 4 bytes of calldata)
+        0x00 calldataload 0xe0 shr
+        
+        // Check if selector matches foo() - selector: 0xc2985578
+        dup1 0xc2985578 eq foo_jump jumpi
+        
+        // Check if selector matches bar() - selector: 0xfebb0f7e
+        dup1 0xfebb0f7e eq bar_jump jumpi
+        
+        // If no match, revert
+        0x00 0x00 revert
+        
+    foo_jump:
+        foo()
+        
+    bar_jump:
+        bar()
+}
 
+#define macro foo() = takes(0) returns(0) {
+    // Return 2
+    0x02
+    0x00 mstore
+    0x20 0x00 return
+}
+
+#define macro bar() = takes(0) returns(0) {
+    // Return 3
+    0x03
+    0x00 mstore
+    0x20 0x00 return
 }

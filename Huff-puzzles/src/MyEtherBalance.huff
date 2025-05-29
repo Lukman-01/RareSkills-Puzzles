@@ -1,4 +1,3 @@
-
 /** 
  *  MY ETHER BALANCE HUFF EXERCISE
  *
@@ -8,5 +7,8 @@
  */
 
 #define macro MAIN() = takes(0) returns(0) {
-   
+    caller          // Get msg.sender address and push to stack
+    balance         // Get balance of the address on top of stack
+    0x00 mstore     // Store the balance at memory position 0x00
+    0x20 0x00 return // Return 32 bytes (0x20) starting from memory position 0x00
 }
