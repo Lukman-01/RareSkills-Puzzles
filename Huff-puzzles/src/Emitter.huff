@@ -1,4 +1,4 @@
- /** 
+/** 
  *  EMITTER HUFF EXERCISE
  *  
  *  The task is to enable this contract, when the function `value(uint256, uint256)` is called, should
@@ -7,11 +7,45 @@
  *  NOTICE: The contract should revert when an unrecognized function is called
  */
 
- #define function value(uint256, uint256) payable returns()
- 
- #define event Value(uint256 indexed, uint256)
+#define function value(uint256, uint256) payable returns()
 
+#define event Value(uint256 indexed, uint256)
 
- #define macro MAIN() = takes(0) returns(0) {
+#define macro MAIN() = takes(0) returns(0) {
+    // Check if there's calldata - if not, revert (no receive function)
+    calldatasize                    // [calldatasize]
+    iszero revert_invalid jumpi     // Revert if no calldata
     
- }
+    // Extract function selector from calldata
+    0x00 calldataload               // [calldata[0:32]]
+    0xE0 shr                        // [function_selector] (shift right by 224 bits)
+    
+    // Check if selector matches value(uint256, uint256)
+    __FUNC_SIG(value) eq            // [selector == value_selector]
+    value_function jumpi            // Jump to value_function if matches
+    
+    // If no function matches, revert
+    revert_invalid:
+        0x00 0x00 revert
+    
+    value_function:
+        // Extract the two uint256 parameters from calldata
+        0x04 calldataload           // [param1] (first parameter - will be indexed)
+        0x24 calldataload           // [param2, param1] (second parameter - will be in data)
+        
+        // Store the second parameter (non-indexed) in memory
+        0x00 mstore                 // [param1] (param2 stored at memory[0x00])
+        
+        // Build stack for log2: log2 consumes [offset, size, topic1, topic2]
+        // We need: offset=0x00, size=0x20, topic1=event_hash, topic2=param1
+        
+        // Push arguments in reverse order (since stack is LIFO)
+        // param1 (topic2 - indexed parameter)           // [param1]
+        __EVENT_HASH(Value)         // [event_hash, param1] (topic1 - event signature)
+        0x20                        // [0x20, event_hash, param1] (size)  
+        0x00                        // [0x00, 0x20, event_hash, param1] (offset)
+        log2                        // [] (emit event)
+        
+        // End execution successfully
+        stop
+}
