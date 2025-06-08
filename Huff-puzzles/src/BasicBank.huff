@@ -11,6 +11,107 @@
 #define function balanceOf(address) payable returns(uint256)
 #define function withdraw(uint256) payable returns()
 
-#define macro MAIN() = takes(0) returns(0) {
+// Storage slots
+#define constant BALANCE_SLOT = FREE_STORAGE_POINTER()
 
+// Function selectors
+#define constant BALANCE_OF_SELECTOR = 0x70a08231
+#define constant WITHDRAW_SELECTOR = 0x2e1a7d4d
+
+#define macro BALANCE_OF() = takes(0) returns(0) {
+    // Get the address from calldata (skip function selector)
+    0x04 calldataload
+    
+    // Load balance from storage
+    [BALANCE_SLOT] add sload
+    
+    // Return the balance
+    0x00 mstore
+    0x20 0x00 return
+}
+
+#define macro WITHDRAW() = takes(0) returns(0) {
+    // Get withdrawal amount from calldata
+    0x04 calldataload        // [amount]
+    
+    // Get caller's current balance
+    caller                   // [amount, caller]
+    [BALANCE_SLOT] add      // [amount, balance_slot]
+    dup1 sload              // [amount, balance_slot, current_balance]
+    
+    // Check if sufficient balance
+    dup3                    // [amount, balance_slot, current_balance, amount]
+    dup2                    // [amount, balance_slot, current_balance, amount, current_balance]
+    lt iszero               // [amount, balance_slot, current_balance, sufficient_balance]
+    
+    sufficient_balance jumpi
+    // Revert if insufficient balance
+    0x00 0x00 revert
+    
+    sufficient_balance:
+    // Calculate new balance (current_balance - amount)
+    dup3 swap1 sub          // [amount, balance_slot, new_balance]
+    
+    // Store new balance
+    dup2 sstore             // [amount, balance_slot]
+    pop                     // [amount]
+    
+    // Transfer ETH to caller
+    0x00 0x00 0x00 0x00     // [amount, 0, 0, 0, 0]
+    swap4                   // [0, 0, 0, 0, amount]
+    caller                  // [0, 0, 0, 0, amount, caller]
+    gas call                // [success]
+    
+    // Check if transfer was successful
+    iszero revert_if_failed jumpi
+    stop
+    
+    revert_if_failed:
+    0x00 0x00 revert
+}
+
+#define macro RECEIVE() = takes(0) returns(0) {
+    // Get caller and value
+    caller                  // [caller]
+    callvalue              // [caller, value]
+    
+    // Calculate storage slot for caller's balance
+    swap1                   // [value, caller]
+    [BALANCE_SLOT] add     // [value, balance_slot]
+    
+    // Load current balance
+    dup1 sload             // [value, balance_slot, current_balance]
+    
+    // Add deposited value to current balance
+    dup3 add               // [value, balance_slot, new_balance]
+    
+    // Store new balance
+    swap1 sstore           // [value]
+    pop                    // []
+    
+    stop
+}
+
+#define macro MAIN() = takes(0) returns(0) {
+    // Check if there's calldata (function call) or just ETH transfer
+    calldatasize iszero receive_ether jumpi
+    
+    // Load function selector
+    0x00 calldataload 0xE0 shr
+    
+    // Route to appropriate function
+    dup1 [BALANCE_OF_SELECTOR] eq balance_of_jump jumpi
+    dup1 [WITHDRAW_SELECTOR] eq withdraw_jump jumpi
+    
+    // If no matching function selector, revert
+    0x00 0x00 revert
+    
+    balance_of_jump:
+        BALANCE_OF()
+    
+    withdraw_jump:
+        WITHDRAW()
+        
+    receive_ether:
+        RECEIVE()
 }
