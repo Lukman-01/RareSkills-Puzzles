@@ -4,12 +4,18 @@ pragma solidity ^0.8.13;
 contract DoubleOrNothing {
     function main(uint256 x) external pure returns (uint256) {
         assembly {
-            // your code here
-            // return 2 * x if the product is
-            // 21 or less. If 2 * x > 21, then
-            // return 0.
-            // Hint: check if x ≤ 10, which is equivalent to x < 11
-
+            // Check if x < 11 (equivalent to x ≤ 10)
+            // If true, return 2 * x, otherwise return 0
+            let result := 0
+            
+            // Check if x is less than 11
+            if lt(x, 11) {
+                result := mul(x, 2)
+            }
+            
+            // Store result in memory and return
+            mstore(0x00, result)
+            return(0x00, 0x20)
         }
     }
 }
