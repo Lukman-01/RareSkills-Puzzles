@@ -6,10 +6,19 @@ contract Tenary {
 
     function main(uint256 a, uint256 b, uint256 c) external {
         assembly {
-            // your code here
-            // store `10` in the storage variable `result` if a > b,
-            // else if b > c, store `20`,
-            // else, store `30`
+            let value := 30  // default value
+            
+            // Check if a > b
+            if gt(a, b) {
+                value := 10
+            }
+            // Else if b > c (only check if a <= b)
+            if and(not(gt(a, b)), gt(b, c)) {
+                value := 20
+            }
+            
+            // Store the result in storage slot 0 (result variable)
+            sstore(0, value)
         }
     }
 }
