@@ -10,11 +10,17 @@ contract ReadFromFixedArray {
 
     function main(uint256 index) external view returns (uint256) {
         assembly {
-            // your code here
-            // read the value at the `index` in the fixed array `readMe`
-            // and return it
-            // Assume `index` is <= to the length of readMe
-            // Hint: https://www.rareskills.io/post/solidity-dynamic
+            // Fixed arrays are stored sequentially in storage
+            // readMe starts at slot 0, so readMe[i] is at slot (0 + i)
+            // Calculate the storage slot for readMe[index]
+            let slot := add(0, index)
+            
+            // Load the value from the calculated storage slot
+            let value := sload(slot)
+            
+            // Store result in memory and return
+            mstore(0x00, value)
+            return(0x00, 0x20)
         }
     }
 }
