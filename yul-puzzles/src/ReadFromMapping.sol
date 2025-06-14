@@ -10,10 +10,26 @@ contract ReadFromMapping {
 
     function main(uint256 index) external view returns (uint256) {
         assembly {
-            // your code here
-            // read the value at the `index` in the mapping `readMe`
-            // and return it
-            // Hint: https://www.rareskills.io/post/solidity-dynamic
+            // For mappings, the storage slot is calculated as:
+            // keccak256(key || mapping_slot)
+            // where || means concatenation
+            
+            // Store the key (index) in memory at position 0x00
+            mstore(0x00, index)
+            
+            // Store the mapping's storage slot in memory at position 0x20
+            mstore(0x20, readMe.slot)
+            
+            // Calculate the storage slot for this key
+            // Hash 64 bytes (32 bytes key + 32 bytes slot)
+            let storageSlot := keccak256(0x00, 0x40)
+            
+            // Load the value from the calculated storage slot
+            let value := sload(storageSlot)
+            
+            // Store the value in memory and return it
+            mstore(0x00, value)
+            return(0x00, 0x20)
         }
     }
 }
