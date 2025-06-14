@@ -10,11 +10,27 @@ contract ReadFromDynamicArray {
 
     function main(uint256 index) external view returns (uint256) {
         assembly {
-            // your code here
-            // read the value at the `index` in the dynamic array `readMe`
-            // and return it
-            // Assume `index` is <= to the length of readMe
-            // Hint: https://www.rareskills.io/post/solidity-dynamic
+            // Calculate storage slot for array element
+            // For dynamic arrays:
+            // - Array length is stored at readMe.slot (slot 0)
+            // - Array elements start at keccak256(readMe.slot)
+            // - Element at index i is at keccak256(readMe.slot) + i
+            
+            // Store the array's storage slot in memory for hashing
+            mstore(0x00, readMe.slot)
+            
+            // Calculate the starting slot for array data
+            let dataSlot := keccak256(0x00, 0x20)
+            
+            // Add index to get the specific element's slot
+            let elementSlot := add(dataSlot, index)
+            
+            // Load the value from storage
+            let value := sload(elementSlot)
+            
+            // Store the value in memory and return it
+            mstore(0x00, value)
+            return(0x00, 0x20)
         }
     }
 }
