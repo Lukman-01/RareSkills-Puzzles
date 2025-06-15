@@ -12,9 +12,17 @@ contract ReadFromPacked128 {
 
     function main() external view returns (uint256) {
         assembly {
-            // your code here
-            // unpack and read data from the storage variable `readMe` of type uint128
-            // then return it
+            // Load the full 32-byte storage slot (slot 0)
+            // Both uint128 values are packed in this slot
+            let packed := sload(0)
+            
+            // Extract readMe from the upper 128 bits
+            // Right shift by 128 bits to get the upper half
+            let result := shr(128, packed)
+            
+            // Return the unpacked value
+            mstore(0x00, result)
+            return(0x00, 0x20)
         }
     }
 }
