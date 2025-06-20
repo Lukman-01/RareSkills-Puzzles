@@ -7,14 +7,21 @@ contract EventWithIndexedData {
 
     function main(address emitter, bytes32 id, uint256 num) external {
         assembly {
-            // your code here
-            // emit the `MyEvent(address,bytes32,uint256)` event
-            // the event has three components: two indexed fields (`emitter`, `id`) and one non-indexed field (`num`)
-            // use `log3` to emit the event with three topics:
-            //  topic 0: The event signature hash (keccak256("MyEvent(address,bytes32,uint256)"))
-            //  topic 1: The `emitter` address
-            //  topic 2: The `id` bytes32 value
-            // include the `number` field as the data payload
+            // Store the non-indexed data (num) in memory
+            mstore(0x00, num)
+            
+            // Emit the event using log3 (3 topics + data)
+            // topic0: keccak256("MyEvent(address,bytes32,uint256)")
+            // topic1: emitter address  
+            // topic2: id bytes32
+            // data: num (32 bytes at memory position 0x00)
+            log3(
+                0x00,                                                           // memory offset where data starts
+                0x20,                                                           // data length (32 bytes for uint256)
+                0x044d482819499c9d5fde1245ce63873b1259fc52fc78651ccdcdf7392637d374,     // keccak256("MyEvent(address,bytes32,uint256)")
+                emitter,                                                        // topic1: emitter address
+                id                                                              // topic2: id bytes32
+            )
         }
     }
 }

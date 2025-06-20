@@ -7,12 +7,26 @@ contract EventWithMultipleData {
 
     function main(address emitter, uint256 num, bool isActive) external {
         assembly {
-            // your code here
-            // emit the `MyEvent(address,uint256,bool)` event
-            // the event has three fields of data: an address, a uint256, and a bool
-            // use `log1` to emit the event with one topic (the event signature hash) and the data payload
-            // Hint: Pack the `emitter`, `num`, and `isActive` values in memory for the data payload
-            // Note: Ensure the data layout in memory matches the event parameter order
+            // Pack the data in memory in the correct order: emitter, num, isActive
+            // Each field takes 32 bytes in the ABI encoding
+            
+            // Store emitter (address) at memory position 0x00
+            mstore(0x00, emitter)
+            
+            // Store num (uint256) at memory position 0x20 (32 bytes offset)
+            mstore(0x20, num)
+            
+            // Store isActive (bool) at memory position 0x40 (64 bytes offset)
+            mstore(0x40, isActive)
+            
+            // Emit the event using log1 (1 topic + data)
+            // topic0: keccak256("MyEvent(address,uint256,bool)")
+            // data: emitter + num + isActive (96 bytes total: 3 * 32 bytes)
+            log1(
+                0x00,                                                           // memory offset where data starts
+                0x60,                                                           // data length (96 bytes = 3 * 32 bytes)
+                0x532e3b2a35ca0879a4b08813e66d07f972db1900da196cbdc7e31d4d1bfc657f   // keccak256("MyEvent(address,uint256,bool)")
+            )
         }
     }
 }
