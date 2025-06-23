@@ -1,54 +1,96 @@
-# Puzzle Solutions Repository
+# RareSkills Puzzle Solutions
 
-Welcome to the RareSkills Puzzle Solutions Repository! This repository contains solutions to various coding puzzles designed to help you deepen your understanding of different technologies and concepts in a fun and challenging way.
+Welcome to the **RareSkills Puzzle Solutions Repository** a curated collection of solutions to coding puzzles from the [RareSkills](https://www.rareskills.io) platform. These puzzles span various technologies including smart contract security, gas optimization, zero-knowledge proofs, and low-level EVM logic.
 
-## Why Puzzles?
+Whether you're aiming to sharpen your skills in Solidity, Huff, Yul, or Noir, this repository provides structured challenges that promote deeper understanding through hands-on learning.
 
-Project-based learning is a powerful approach, but puzzles offer unique advantages that can enhance your learning experience:
 
-- **Exploring New Concepts**: Projects often limit you to what you already know, but puzzles push you to engage with unfamiliar topics, helping you expand your knowledge base.
-- **Immediate Feedback**: Puzzles provide direct feedback, allowing you to quickly assess whether you've understood a topic correctly.
-- **Time Management**: Puzzles are bite-sized and easier to fit into a busy schedule. You can plan to solve "1 puzzle per day" and make consistent progress in your learning journey.
+## 📌 Important Note
 
-## About the Puzzles
+> This repository contains **only the solutions** to the RareSkills puzzles.  
+> **Puzzle prompts and questions are not included** here.
 
-All the puzzles in this repository are sourced from the **Rare Skills** platform. Rare Skills is known for offering high-quality, challenging exercises that help developers enhance their technical abilities in various domains, including blockchain, security, and zero-knowledge proofs.
+To get the full learning experience:
+1. Visit the official [RareSkills](https://www.rareskills.io) site or their respective public GitHub repositories.
+2. Attempt the puzzles on your own.
+3. Return here to compare your solution or gain insight into alternative approaches.
 
-## Puzzle Categories
 
-This repository contains several folders, each dedicated to a different type of puzzle from the Rare Skills platform:
+## 🎯 Why Puzzles?
 
-1. **Solidity Exercises**: Beginner-friendly drills to help you master the basics of Solidity, the programming language used for writing smart contracts on the Ethereum blockchain.
+While building full projects is valuable, puzzles offer focused practice with immediate feedback. They:
 
-2. **Solidity Riddles**: These are 18 security-oriented Capture the Flag (CTF) exercises designed to test your understanding of Solidity and smart contract security. Perfect for those looking to enhance their security skills.
+- Encourage exploration of unfamiliar concepts.
+- Strengthen problem-solving and debugging skills.
+- Provide digestible, time-efficient challenges.
+- Help you think more like a security auditor or protocol engineer.
 
-3. **Huff Puzzles**: Learn the Ethereum Virtual Machine (EVM) by building simple programs using Huff assembly language. These puzzles are a great way to get hands-on experience with low-level EVM programming.
 
-4. **Gas Optimization Puzzles**: These puzzles challenge you to write Solidity code that meets a specific gas efficiency threshold. Perfect for developers looking to optimize their smart contracts for better performance.
+## 🧩 Puzzle Categories
 
-5. **Uniswap V2 Puzzles**: These puzzles focus on teaching you the features and intricacies of Uniswap V2, one of the most popular decentralized exchanges on the Ethereum blockchain.
+Each folder in this repository corresponds to a different category of puzzles:
 
-6. **Zero Knowledge (ZK) Puzzles**: Learn ZK circuit programming in Circom incrementally through these puzzles. Zero-knowledge proofs are a key component of modern cryptography and privacy-preserving technologies.
+### 🔹 Solidity-Based
 
-## How to Use This Repository
+- **Solidity Exercises**  
+  Beginner-friendly drills for learning Solidity basics and syntax.
 
-1. **Clone the Repository**: Start by cloning this repository to your local machine.
+- **Solidity Riddles**  
+  18 CTF-style puzzles centered around identifying and exploiting smart contract vulnerabilities.
 
+- **Gas Optimization Puzzles**  
+  Write gas-efficient Solidity code that meets strict gas usage requirements.
+
+- **Uniswap V2 Puzzles**  
+  Deep dive into the internal mechanics of Uniswap V2 through hands-on exercises.
+
+### 🔹 Low-Level & Assembly
+
+- **Huff Puzzles**  
+  Build logic using the Huff programming language, working directly with EVM opcodes.
+
+- **Yul Puzzles**  
+  A comprehensive set of 80+ assembly-based challenges using the Yul language. Write code to pass tests in pure Yul.
+
+### 🔹 Zero-Knowledge Proofs
+
+- **ZK Puzzles (Circom)**  
+  Learn zero-knowledge circuit design by implementing puzzles in Circom.
+
+- **Noir Puzzles**  
+  Write zero-knowledge circuits using the Noir DSL. Includes both standalone puzzles and puzzles integrated with Foundry tests.
+
+### 🔹 Auditing & Security Analysis
+
+- **Buggy ERC-20**  
+  A collection of 20 intentionally broken ERC-20 token implementations. Analyze and identify critical bugs that deviate from the ERC-20 standard. Inspired by real-world token vulnerabilities.
+
+
+## 🚀 Getting Started
+
+1. **Clone the Repository**
    ```bash
    git clone https://github.com/Lukman-01/RareSkills-Puzzles.git
-   ```
-
-2. **Navigate to the Puzzle Folder**: Each puzzle category has its own folder. Navigate to the relevant folder to access the puzzles and their solutions.
-
-   ```bash
    cd RareSkills-Puzzles
-   ```
+````
 
-3. **Explore and Solve**: Inside each folder, you’ll find individual puzzles with their respective solutions. Try solving the puzzles on your own before checking the solutions.
+2. **Pick a Puzzle Folder**
+   Navigate to any of the puzzle categories above (e.g., `solidity-riddles`, `yul-puzzles`, `zk-puzzles`, etc.).
 
-4. **Contribute**: Found a better solution or want to add your own puzzles? Feel free to submit a pull request!
+3. **Attempt the Puzzle First**
+   Refer to the original puzzle prompt from RareSkills before checking the solution.
+
+4. **Test Your Solution**
+   Most folders include test files. Use the appropriate toolchain:
+
+   * `forge test` (with Foundry) for Solidity, Huff, or Yul.
+   * `nargo test` for Noir.
+   * Circom uses `snarkjs` or `circom` directly depending on the setup.
 
 
-## Acknowledgments
+## 🧠 How to Approach Each Puzzle
 
-Special thanks to the **Rare Skills** platform for providing these challenging and educational puzzles. If you want to test your skills further or explore more puzzles, visit [Rare Skills](https://www.rareskills.io).
+* **Understand the Problem**: Start by studying the puzzle description from the RareSkills source.
+* **Work Independently**: Attempt solving it on your own.
+* **Compare and Learn**: Review the solution in this repo to see different patterns, optimizations, or missed edge cases.
+* **Explore Alternatives**: Consider writing your own optimized or more secure version.
