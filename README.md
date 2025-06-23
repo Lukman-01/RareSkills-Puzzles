@@ -72,13 +72,13 @@ Each folder in this repository corresponds to a different category of puzzles:
    ```bash
    git clone https://github.com/Lukman-01/RareSkills-Puzzles.git
    cd RareSkills-Puzzles
-````
+   ````
 
 2. **Pick a Puzzle Folder**
-   Navigate to any of the puzzle categories above (e.g., `solidity-riddles`, `yul-puzzles`, `zk-puzzles`, etc.).
+   Navigate to any of the puzzle categories above `solidity-riddles`, `yul-puzzles`, `zk-puzzles`.
 
 3. **Attempt the Puzzle First**
-   Refer to the original puzzle prompt from RareSkills before checking the solution.
+   Refer to the original puzzle question from RareSkills before checking the solution.
 
 4. **Test Your Solution**
    Most folders include test files. Use the appropriate toolchain:
