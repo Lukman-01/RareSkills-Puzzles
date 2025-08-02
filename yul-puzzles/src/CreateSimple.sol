@@ -4,12 +4,17 @@ pragma solidity ^0.8.13;
 contract CreateSimple {
     function main(bytes memory deploymentBytecode) external returns (address addr) {
         assembly {
-            // your code here
-            // create a contract using the deploymentBytecode
-            // return the address of the contract
-            // hint: use the `create` opcode
-            // hint: the bytecode is already in memory
-
+            // Get the length of the bytecode
+            let size := mload(deploymentBytecode)
+            
+            // Get the pointer to the actual bytecode data (skip the length prefix)
+            let dataPtr := add(deploymentBytecode, 0x20)
+            
+            // Use CREATE opcode: create(value, offset, size)
+            // value = 0 (no ETH sent with deployment)
+            // offset = dataPtr (pointer to bytecode in memory)
+            // size = size (length of bytecode)
+            addr := create(0, dataPtr, size)
         }
     }
 }
