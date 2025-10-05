@@ -9,5 +9,25 @@
 
 
  #define macro MAIN() = takes(0) returns(0) {
+    // The test passes abi.encode(data) as calldata
+    // We need to hash the entire calldata
     
+    // Get the size of calldata
+    calldatasize            // [calldatasize]
+    
+    // Copy all calldata to memory at position 0
+    dup1                    // [calldatasize, calldatasize]
+    0x00                    // [0, calldatasize, calldatasize]
+    0x00                    // [0, 0, calldatasize, calldatasize]
+    calldatacopy            // [calldatasize] - copies calldata[0:calldatasize] to memory[0:calldatasize]
+    
+    // Hash the calldata in memory
+    0x00                    // [0, calldatasize] - memory offset
+    sha3                    // [hash] - keccak256 hash
+    
+    // Store hash in memory for return
+    0x00 mstore             // []
+    
+    // Return the hash (32 bytes)
+    0x20 0x00 return
  }
