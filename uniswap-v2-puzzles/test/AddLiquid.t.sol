@@ -12,6 +12,8 @@ contract AddLiquidTest is Test {
     address public pool = 0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc;
 
     function setUp() public {
+        vm.rollFork(20055371);
+        
         addLiquid = new AddLiquid();
 
         // transfers 1 WETH to addLiquid contract
