@@ -12,5 +12,41 @@
 
 
  #define macro MAIN() = takes(0) returns(0) {
+    // Check for calldata
+    0x04 calldatasize lt iszero has_calldata jumpi
+        0x00 0x00 revert
+    has_calldata:
     
+    // Load function selector
+    0x00 calldataload 0xE0 shr
+    
+    // Check if matches sendEther selector
+    __FUNC_SIG(sendEther) eq send_jump jumpi
+    
+    // Unknown selector, revert
+    0x00 0x00 revert
+    
+    send_jump:
+        // Load address argument from calldata at position 0x04
+        0x04 calldataload
+        
+        // Mask to get only the address (lower 20 bytes)
+        0x000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        and                     // [address]
+        
+        // Prepare for CALL: gas, address, value, argsOffset, argsSize, retOffset, retSize
+        0x00                    // [retSize, address]
+        0x00                    // [retOffset, retSize, address]
+        0x00                    // [argsSize, retOffset, retSize, address]
+        0x00                    // [argsOffset, argsSize, retOffset, retSize, address]
+        callvalue               // [value, argsOffset, argsSize, retOffset, retSize, address]
+        dup6                    // [address, value, argsOffset, argsSize, retOffset, retSize, address]
+        gas                     // [gas, address, value, argsOffset, argsSize, retOffset, retSize, address]
+        call                    // [success, address]
+        
+        // Pop the result and address
+        pop pop
+        
+        // Stop execution
+        stop
  }
