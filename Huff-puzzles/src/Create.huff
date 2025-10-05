@@ -1,4 +1,3 @@
- 
 /** 
  *  CREATE HUFF EXERCISE
  *  
@@ -9,9 +8,77 @@
  *  NOTICE: The contract should revert when an unrecognized function is called
  */
 
- #define function makeContract() payable returns(address)
+#define function makeContract() payable returns(address)
 
-
- #define macro MAIN() = takes(0) returns(0) {
+#define macro MAIN() = takes(0) returns(0) {
+    // Check for calldata
+    0x04 calldatasize lt iszero has_calldata jumpi
+        0x00 0x00 revert
+    has_calldata:
     
- }
+    // Load function selector
+    0x00 calldataload 0xE0 shr
+    
+    // Check if matches makeContract selector
+    __FUNC_SIG(makeContract) eq makeContractJump jumpi
+    
+    // Unknown selector, revert
+    0x00 0x00 revert
+    
+    makeContractJump:
+        MAKE_CONTRACT()
+}
+
+#define macro MAKE_CONTRACT() = takes(0) returns(0) {
+    // We need to create a contract that returns 0xcaffe (as bytes32)
+    
+    // RUNTIME CODE (what the deployed contract executes):
+    // PUSH32 0x00000000000000000000000000000000000000000000000000000000000caffe
+    // PUSH1 0x00
+    // MSTORE  
+    // PUSH1 0x20
+    // PUSH1 0x00
+    // RETURN
+    //
+    // Opcodes:
+    // 0x7f = PUSH32
+    // 0x60 = PUSH1
+    // 0x52 = MSTORE
+    // 0xf3 = RETURN
+    //
+    // Runtime bytecode (38 bytes = 0x26):
+    // 7f 00000000000000000000000000000000000000000000000000000000000caffe 60 00 52 60 20 60 00 f3
+    
+    // INIT CODE (returns the runtime code):
+    // PUSH1 0x26 (38 - size of runtime code)
+    // PUSH1 0x0b (11 - offset where runtime starts in this bytecode)
+    // PUSH1 0x00 (0 - destination in memory)
+    // CODECOPY (copies runtime code to memory)
+    // PUSH1 0x26 (38 - size to return)
+    // PUSH1 0x00 (0 - offset in memory)
+    // RETURN
+    //
+    // Init bytecode (11 bytes = 0x0b):
+    // 60 26 60 0b 60 00 39 60 26 60 00 f3
+    
+    // Total: 11 + 38 = 49 bytes (0x31)
+    
+    // Store complete bytecode in memory
+    // First 32 bytes: init (11) + first part of runtime (21)
+    0x6026600b60003960266000f37f000000000000000000000000000000000000
+    0x00 mstore
+    
+    // Next 32 bytes: rest of runtime (17) + padding
+    0x00000000000caffe6000526020600060003df30000000000000000000000000000
+    0x20 mstore
+    
+    // CREATE opcode: value, offset, size
+    0x00      // value (no ETH sent)
+    0x00      // offset in memory
+    0x31      // size: 49 bytes
+    create    // [address]
+    
+    // Return the address
+    0x00 mstore
+    0x20 0x00 return
+}

@@ -1,4 +1,3 @@
- 
 /** 
  *  DISTRIBUTE HUFF EXERCISE
  *  
@@ -10,9 +9,80 @@
  *  NOTICE: The contract should revert when an unrecognized function is called
  */
 
- #define function distribute(address[]) payable returns()
+#define function distribute(address[]) payable returns()
 
+#define macro MAIN() = takes(0) returns(0) {
+    // Check for calldata - need at least 4 bytes for selector
+    0x04 calldatasize lt iszero no_calldata jumpi
+        0x00 0x00 revert
+    no_calldata:
 
- #define macro MAIN() = takes(0) returns(0) {
-   
- }
+    // Load the function selector from calldata
+    0x00 calldataload 0xE0 shr
+    
+    // Check if matches distribute selector
+    __FUNC_SIG(distribute) eq distribute_jump jumpi
+    
+    // Unknown selector, revert
+    0x00 0x00 revert
+    
+    distribute_jump:
+        // Get the offset to array data
+        0x04 calldataload
+        0x04 add                // [array_start_pos]
+        
+        // Load array length
+        dup1 calldataload       // [length, array_start_pos]
+        
+        // Check if length is 0, revert if so
+        dup1 iszero revert_zero jumpi
+        
+        // Calculate amount per address: callvalue / length
+        dup1 callvalue swap1 div // [amount_per_address, length, array_start_pos]
+        
+        // Initialize counter to 0
+        0x00                     // [counter, amount_per_address, length, array_start_pos]
+        
+        loop:
+            // Check if counter >= length
+            dup3 dup2 eq end_loop jumpi
+            
+            // Calculate position: array_start_pos + 32 + (counter * 32)
+            dup1 0x20 mul           // [counter*32, counter, amount_per_address, length, array_start_pos]
+            dup5 0x20 add add       // [addr_pos, counter, amount_per_address, length, array_start_pos]
+            
+            // Load address and mask to 20 bytes
+            calldataload            // [addr_full, counter, amount_per_address, length, array_start_pos]
+            0x000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            and                     // [address, counter, amount_per_address, length, array_start_pos]
+            
+            // Prepare CALL: gas address value argsOffset argsSize retOffset retSize
+            // We need stack: [gas, address, value, argsOffset, argsSize, retOffset, retSize, ...]
+            
+            dup3                    // [amount, address, counter, amount_per_address, length, array_start_pos]
+            0x00                    // [retSize, amount, address, counter, amount_per_address, length, array_start_pos]
+            0x00                    // [retOffset, retSize, amount, address, counter, amount_per_address, length, array_start_pos]
+            0x00                    // [argsSize, retOffset, retSize, amount, address, counter, amount_per_address, length, array_start_pos]
+            0x00                    // [argsOffset, argsSize, retOffset, retSize, amount, address, counter, amount_per_address, length, array_start_pos]
+            dup5                    // [amount, argsOffset, argsSize, retOffset, retSize, amount, address, counter, amount_per_address, length, array_start_pos]
+            dup7                    // [address, amount, argsOffset, argsSize, retOffset, retSize, amount, address, counter, amount_per_address, length, array_start_pos]
+            gas                     // [gas, address, amount, argsOffset, argsSize, retOffset, retSize, amount, address, counter, amount_per_address, length, array_start_pos]
+            
+            call                    // [success, amount, address, counter, amount_per_address, length, array_start_pos]
+            
+            // Clean up: pop success, amount, address
+            pop pop pop             // [counter, amount_per_address, length, array_start_pos]
+            
+            // Increment counter
+            0x01 add                // [counter+1, amount_per_address, length, array_start_pos]
+            
+            loop jump
+        
+        end_loop:
+            // Clean up stack
+            pop pop pop pop
+            stop
+        
+        revert_zero:
+            0x00 0x00 revert
+}

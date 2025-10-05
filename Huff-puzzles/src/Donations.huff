@@ -8,5 +8,59 @@
 #define function donated(address) payable returns(uint256)
 
 #define macro MAIN() = takes(0) returns(0) {
+    // Check if there's any calldata
+    calldatasize iszero receive_ether jumpi
     
+    // There's calldata, check if it's at least 4 bytes
+    calldatasize 0x04 lt iszero has_selector jumpi
+        0x00 0x00 revert
+    
+    has_selector:
+        // Load function selector
+        0x00 calldataload 0xE0 shr
+        
+        // Check if matches donated selector
+        __FUNC_SIG(donated) eq donated_jump jumpi
+        
+        // Unknown selector, revert
+        0x00 0x00 revert
+    
+    donated_jump:
+        // Get address parameter
+        0x04 calldataload       // [address]
+        
+        // Calculate storage slot: keccak256(address . slot)
+        // Store address at position 0
+        0x00 mstore             // []
+        // Store slot (0) at position 32
+        0x00 0x20 mstore        // []
+        
+        // Hash to get storage slot
+        0x40 0x00 sha3          // [storage_slot]
+        
+        // Load value from storage
+        sload                   // [value]
+        
+        // Return value
+        0x00 mstore
+        0x20 0x00 return
+    
+    receive_ether:
+        // No calldata - receive function
+        // Calculate storage slot for msg.sender
+        caller                  // [msg.sender]
+        0x00 mstore             // []
+        0x00 0x20 mstore        // []
+        0x40 0x00 sha3          // [storage_slot]
+        
+        // Load current value
+        dup1 sload              // [current_value, storage_slot]
+        
+        // Add callvalue
+        callvalue add           // [new_value, storage_slot]
+        
+        // Store new value
+        swap1 sstore            // []
+        
+        stop
 }

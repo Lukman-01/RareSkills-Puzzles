@@ -1,4 +1,3 @@
-
 /** 
  *  MULTIPLY HUFF EXERCISE
  *
@@ -13,5 +12,51 @@
 
 
 #define macro MAIN() = takes(0) returns(0) {
-
+    // Check for calldata
+    0x04 calldatasize lt iszero has_calldata jumpi
+        0x00 0x00 revert
+    has_calldata:
+    
+    // Load function selector
+    0x00 calldataload 0xE0 shr
+    
+    // Check if matches multiply selector
+    __FUNC_SIG(multiply) eq multiply_jump jumpi
+    
+    // Unknown selector, revert
+    0x00 0x00 revert
+    
+    multiply_jump:
+        // Load arguments
+        0x04 calldataload       // [a]
+        0x24 calldataload       // [b, a]
+        
+        // Duplicate for calculation
+        dup2 dup2               // [b, a, b, a]
+        
+        // Multiply
+        mul                     // [result, b, a]
+        
+        // Overflow check: if b == 0, no overflow
+        dup2 iszero no_check jumpi
+        
+        // b != 0, verify result / b == a
+        dup1 dup3 div           // [result/b, result, b, a]
+        dup4 eq                 // [(result/b)==a, result, b, a]
+        valid jumpi
+        
+        // Overflow occurred
+        0x00 0x00 revert
+        
+        valid:
+            // Clean stack and return result
+            swap2 pop pop       // [result]
+            0x00 mstore
+            0x20 0x00 return
+        
+        no_check:
+            // b is 0, return 0
+            swap2 pop pop       // [result]
+            0x00 mstore
+            0x20 0x00 return
 }
