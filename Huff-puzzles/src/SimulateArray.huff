@@ -1,6 +1,6 @@
 
 /** 
- *  SUM_ARRAY HUFF EXERCISE
+ *  SIMULATE_ARRAY HUFF EXERCISE
  *
  * In this puzzle, the task is to simulate an array in Huff using the "exact" storage pattern as solidity. Expected functions can; 
  *      - Push numbers onto a array, 
@@ -25,5 +25,168 @@
  #define error ZeroArray()
 
  #define macro MAIN() = takes(0) returns(0) {
+    // Check for calldata
+    0x00 calldatasize lt iszero has_calldata jumpi
+        0x00 0x00 revert
+    has_calldata:
     
+    // Load function selector
+    0x00 calldataload 0xE0 shr
+    
+    // Check each function selector
+    dup1 __FUNC_SIG(pushh) eq pushh_jump jumpi
+    dup1 __FUNC_SIG(popp) eq popp_jump jumpi
+    dup1 __FUNC_SIG(read) eq read_jump jumpi
+    dup1 __FUNC_SIG(length) eq length_jump jumpi
+    dup1 __FUNC_SIG(write) eq write_jump jumpi
+    
+    // Unknown selector, revert
+    0x00 0x00 revert
+    
+    pushh_jump:
+        pop
+        PUSHH()
+    
+    popp_jump:
+        pop
+        POPP()
+    
+    read_jump:
+        pop
+        READ()
+    
+    length_jump:
+        pop
+        LENGTH()
+    
+    write_jump:
+        pop
+        WRITE()
+ }
+
+ #define macro PUSHH() = takes(0) returns(0) {
+    // Load the value to push from calldata
+    0x04 calldataload       // [value]
+    
+    // Load current array length from storage slot 0
+    0x00 sload              // [length, value]
+    
+    // Calculate storage slot for new element: keccak256(0) + length
+    0x00 0x00 mstore        // [length, value]
+    0x20 0x00 sha3          // [base_slot, length, value]
+    dup2 add                // [element_slot, length, value]
+    
+    // Store the value at that slot
+    dup3 swap1 sstore       // [length, value]
+    
+    // Increment length and store back to slot 0
+    0x01 add                // [new_length, value]
+    0x00 sstore             // [value]
+    
+    pop
+    stop
+ }
+
+ #define macro POPP() = takes(0) returns(0) {
+    // Load current array length from storage slot 0
+    0x00 sload              // [length]
+    
+    // Check if length is 0
+    dup1 iszero is_zero jumpi
+    
+    // Length is not 0, decrement it
+    0x01 swap1 sub          // [new_length]
+    dup1                    // [new_length, new_length]
+    
+    // Store new length
+    0x00 sstore             // [new_length]
+    
+    // Calculate storage slot for element to delete: keccak256(0) + new_length
+    0x00 0x00 mstore        // [new_length]
+    0x20 0x00 sha3          // [base_slot, new_length]
+    add                     // [element_slot]
+    
+    // Delete the element
+    0x00 swap1 sstore       // []
+    
+    stop
+    
+    is_zero:
+        // Length is 0, revert with ZeroArray()
+        __ERROR(ZeroArray)
+        0x00 mstore
+        0x04 0x00 revert
+ }
+
+ #define macro READ() = takes(0) returns(0) {
+    // Load index from calldata
+    0x04 calldataload       // [index]
+    
+    // Load array length
+    0x00 sload              // [length, index]
+    
+    // Check if index < length
+    dup2 dup2               // [length, index, length, index]
+    gt is_valid jumpi
+    
+    // index >= length, revert with OutOfBounds()
+    __ERROR(OutOfBounds)
+    0x00 mstore
+    0x04 0x00 revert
+    
+    is_valid:
+        pop                 // [index]
+        
+        // Calculate storage slot: keccak256(0) + index
+        0x00 0x00 mstore    // [index]
+        0x20 0x00 sha3      // [base_slot, index]
+        add                 // [element_slot]
+        
+        // Load value from storage
+        sload               // [value]
+        
+        // Return value
+        0x00 mstore
+        0x20 0x00 return
+ }
+
+ #define macro LENGTH() = takes(0) returns(0) {
+    // Load and return length from slot 0
+    0x00 sload
+    0x00 mstore
+    0x20 0x00 return
+ }
+
+ #define macro WRITE() = takes(0) returns(0) {
+    // Load index from calldata
+    0x04 calldataload       // [index]
+    
+    // Load value from calldata
+    0x24 calldataload       // [value, index]
+    
+    // Load array length
+    0x00 sload              // [length, value, index]
+    
+    // Check if index < length
+    dup3 dup2               // [length, index, length, value, index]
+    gt write_valid jumpi
+    
+    // index >= length, revert with OutOfBounds()
+    __ERROR(OutOfBounds)
+    0x00 mstore
+    0x04 0x00 revert
+    
+    write_valid:
+        pop                 // [value, index]
+        
+        // Calculate storage slot: keccak256(0) + index
+        0x00 0x00 mstore    // [value, index]
+        0x20 0x00 sha3      // [base_slot, value, index]
+        dup3 add            // [element_slot, value, index]
+        
+        // Store value at that slot
+        dup2 swap1 sstore   // [value, index]
+        
+        pop pop
+        stop
  }
