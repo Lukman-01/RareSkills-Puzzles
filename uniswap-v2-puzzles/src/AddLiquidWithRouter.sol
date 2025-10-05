@@ -16,6 +16,7 @@ interface IUniswapV2Router {
 
 interface IERC20 {
     function approve(address spender, uint256 amount) external returns (bool);
+    function balanceOf(address owner) external view returns (uint256);
 }
 
 contract AddLiquidWithRouter {
@@ -34,21 +35,22 @@ contract AddLiquidWithRouter {
     }
 
     function addLiquidityWithRouter(address usdcAddress, uint256 deadline) public {
-        // Contract's initial balances
-        uint256 usdcAmountDesired = 1000 * 10 ** 6; // 1000 USDC (6 decimals)
-        uint256 ethAmountDesired = 1 * 10 ** 18;    // 1 ETH (18 decimals)
+        // Get actual balances
+        uint256 usdcBalance = IERC20(usdcAddress).balanceOf(address(this));
+        uint256 ethBalance = address(this).balance;
 
         // Approve router to spend USDC
-        IERC20(usdcAddress).approve(router, usdcAmountDesired);
+        IERC20(usdcAddress).approve(router, usdcBalance);
 
-        // Set slippage protection (e.g., 1% below desired amounts)
-        uint256 usdcAmountMin = (usdcAmountDesired * 99) / 100; // 99% of USDC
-        uint256 ethAmountMin = (ethAmountDesired * 99) / 100;   // 99% of ETH
+        // Set very low minimums to allow the router to adjust amounts based on pool ratio
+        // The router will use as much as possible while maintaining the correct ratio
+        uint256 usdcAmountMin = 1; // Minimal slippage protection
+        uint256 ethAmountMin = 1;   // Minimal slippage protection
 
         // Add liquidity to USDC/ETH pool via router
-        IUniswapV2Router(router).addLiquidityETH{value: ethAmountDesired}(
+        IUniswapV2Router(router).addLiquidityETH{value: ethBalance}(
             usdcAddress,
-            usdcAmountDesired,
+            usdcBalance,
             usdcAmountMin,
             ethAmountMin,
             msg.sender,
