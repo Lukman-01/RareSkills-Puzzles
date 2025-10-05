@@ -5,7 +5,7 @@ contract SetToOne {
     uint8 public one;
 
     // TODO: change to a better name
-    function setToOne() external {
+    function foobar() external {
         one = 1;
     }
 }

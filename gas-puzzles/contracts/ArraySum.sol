@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.15;
 
-contract OptimizedArraySum {
+contract ArraySum {
     // Do not modify this
     uint256[] array;
 
@@ -11,20 +11,13 @@ contract OptimizedArraySum {
         array = _array;
     }
 
-    // Ultra-optimized function with overflow protection
+    // optimize this function
     function getArraySum() external view returns (uint256) {
-        uint256 length = array.length;
-        
-        if (length == 0) return 0;
-        
         uint256 sum;
-        uint256 i;
-        
-        do {
+        for (uint256 i = 0; i < array.length; i++) {
             sum += array[i];
-            unchecked { ++i; }
-        } while (i < length);
-        
+        }
+
         return sum;
     }
 }

@@ -2,52 +2,32 @@
 
 pragma solidity 0.8.15;
 
-contract OptimizedVote {
+contract Vote {
     struct Voter {
-        bool voted;
         uint8 vote;
+        bool voted;
     }
 
     struct Proposal {
-        bytes32 name;
         uint8 voteCount;
+        bytes32 name;
         bool ended;
     }
 
     mapping(address => Voter) public voters;
-    Proposal[] public proposals;
 
-    // Custom errors for better gas efficiency
-    error AlreadyVoted();
-    error InvalidProposal();
+    Proposal[] proposals;
 
     function createProposal(bytes32 _name) external {
-        proposals.push(Proposal({name: _name, voteCount: 0, ended: false}));
+        proposals.push(Proposal({voteCount: 0, name: _name, ended: false}));
     }
 
     function vote(uint8 _proposal) external {
-        Voter storage sender = voters[msg.sender];
-        
-        // Optimized check with proper error handling
-        if (sender.voted) {
-            revert AlreadyVoted();
-        }
-        
-        // Cache proposals length to avoid multiple SLOAD
-        uint256 proposalsLength = proposals.length;
-        if (_proposal >= proposalsLength) {
-            revert InvalidProposal();
-        }
+        require(!voters[msg.sender].voted, 'already voted');
+        voters[msg.sender].vote = _proposal;
+        voters[msg.sender].voted = true;
 
-        // Optimized storage writes
-        unchecked {
-            // Set voter data efficiently
-            sender.vote = _proposal;
-            sender.voted = true;
-
-            // Pre-increment for gas efficiency
-            ++proposals[_proposal].voteCount;
-        }
+        proposals[_proposal].voteCount += 1;
     }
 
     function getVoteCount(uint8 _proposal) external view returns (uint8) {
