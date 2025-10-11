@@ -23,6 +23,38 @@ contract ExactSwap {
          *     data: leave it empty.
          */
 
-        // your code start here
+        IUniswapV2Pair pair = IUniswapV2Pair(pool);
+        
+        // Get reserves
+        (uint112 reserve0, uint112 reserve1,) = pair.getReserves();
+        
+        // Determine which token is USDC and which is WETH
+        address token0 = pair.token0();
+        
+        // Target output: 1337 USDC (6 decimals)
+        uint256 targetUsdcAmount = 1337 * 1e6;
+        
+        uint256 wethAmountIn;
+        if (token0 == usdc) {
+            // USDC is token0, WETH is token1
+            // Calculate WETH input needed using: amountOut = (amountIn * 997 * reserveOut) / (reserveIn * 1000 + amountIn * 997)
+            // Rearranging: amountIn = (reserveIn * amountOut * 1000) / ((reserveOut - amountOut) * 997)
+            wethAmountIn = (reserve1 * targetUsdcAmount * 1000) / ((reserve0 - targetUsdcAmount) * 997) + 1;
+            
+            // Transfer WETH to pool
+            IERC20(weth).transfer(pool, wethAmountIn);
+            
+            // Swap for exact USDC
+            pair.swap(targetUsdcAmount, 0, address(this), "");
+        } else {
+            // WETH is token0, USDC is token1
+            wethAmountIn = (reserve0 * targetUsdcAmount * 1000) / ((reserve1 - targetUsdcAmount) * 997) + 1;
+            
+            // Transfer WETH to pool
+            IERC20(weth).transfer(pool, wethAmountIn);
+            
+            // Swap for exact USDC
+            pair.swap(0, targetUsdcAmount, address(this), "");
+        }
     }
 }
