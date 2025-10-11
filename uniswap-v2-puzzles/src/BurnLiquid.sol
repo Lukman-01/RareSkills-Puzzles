@@ -19,6 +19,15 @@ contract BurnLiquid {
          *
          *     to: recipient address to receive tokenA and tokenB.
          */
-        // your code here
+        IUniswapV2Pair pair = IUniswapV2Pair(pool);
+        
+        // Get the LP token balance of this contract
+        uint256 lpBalance = pair.balanceOf(address(this));
+        
+        // Transfer LP tokens to the pool (required before calling burn)
+        pair.transfer(pool, lpBalance);
+        
+        // Call burn to remove liquidity and receive tokens back to this contract
+        pair.burn(address(this));
     }
 }
