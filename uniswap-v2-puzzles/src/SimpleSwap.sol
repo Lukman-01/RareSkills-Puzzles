@@ -23,6 +23,30 @@ contract SimpleSwap {
          *     data: leave it empty.
          */
 
-        // your code start here
+        IUniswapV2Pair pair = IUniswapV2Pair(pool);
+        
+        // Get WETH balance of this contract
+        uint256 wethBalance = IERC20(weth).balanceOf(address(this));
+        
+        // Transfer WETH to the pool
+        IERC20(weth).transfer(pool, wethBalance);
+        
+        // Get reserves to calculate output amount
+        (uint112 reserve0, uint112 reserve1,) = pair.getReserves();
+        
+        // Determine which token is USDC and which is WETH
+        address token0 = pair.token0();
+        
+        uint256 amountOut;
+        if (token0 == usdc) {
+            // USDC is token0, WETH is token1
+            // Calculate USDC output using x*y=k formula with 0.3% fee
+            amountOut = (wethBalance * 997 * reserve0) / ((reserve1 * 1000) + (wethBalance * 997));
+            pair.swap(amountOut, 0, address(this), "");
+        } else {
+            // WETH is token0, USDC is token1
+            amountOut = (wethBalance * 997 * reserve1) / ((reserve0 * 1000) + (wethBalance * 997));
+            pair.swap(0, amountOut, address(this), "");
+        }
     }
 }
