@@ -13,7 +13,8 @@ contract Sync {
      *
      */
     function performSync(address pool) public {
-        // your code start here
+        // Call sync to update reserves to match current balances
+        IUniswapV2Pair(pool).sync();
     }
 }
 
@@ -29,6 +30,7 @@ contract Skim {
      *
      */
     function performSkim(address pool) public {
-        // your code start here
+        // Call skim to send excess tokens (difference between balance and reserves) to this contract
+        IUniswapV2Pair(pool).skim(address(this));
     }
 }
