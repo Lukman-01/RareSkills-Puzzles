@@ -37,24 +37,42 @@ contract Twap {
 
     //**       ONE HOUR TWAP START      **//
     function first1HourSnapShot() public {
-        // your code here
+        // Take first snapshot of price0CumulativeLast and timestamp
+        first1HourSnapShot_Price0Cumulative = pool.price0CumulativeLast();
+        (,, first1HourSnapShot_TimeStamp) = pool.getReserves();
     }
 
     function second1HourSnapShot() public returns (uint224 oneHourTwap) {
-        // your code here
-
+        // Take second snapshot of price0CumulativeLast and timestamp
+        second1HourSnapShot_Price0Cumulative = pool.price0CumulativeLast();
+        (,, second1HourSnapShot_TimeStamp) = pool.getReserves();
+        
+        // Calculate TWAP: (priceCumulative2 - priceCumulative1) / (timestamp2 - timestamp1)
+        uint256 priceDiff = second1HourSnapShot_Price0Cumulative - first1HourSnapShot_Price0Cumulative;
+        uint32 timeDiff = second1HourSnapShot_TimeStamp - first1HourSnapShot_TimeStamp;
+        
+        oneHourTwap = uint224(priceDiff / timeDiff);
         return oneHourTwap;
     }
     //**       ONE HOUR TWAP END      **//
 
     //**       ONE DAY TWAP START      **//
     function first1DaySnapShot() public {
-        // your code here
+        // Take first snapshot of price0CumulativeLast and timestamp
+        first1DaySnapShot_Price0Cumulative = pool.price0CumulativeLast();
+        (,, first1DaySnapShot_TimeStamp) = pool.getReserves();
     }
 
     function second1DaySnapShot() public returns (uint224 oneDayTwap) {
-        // your code here
-
+        // Take second snapshot of price0CumulativeLast and timestamp
+        second1DaySnapShot_Price0Cumulative = pool.price0CumulativeLast();
+        (,, second1DaySnapShot_TimeStamp) = pool.getReserves();
+        
+        // Calculate TWAP: (priceCumulative2 - priceCumulative1) / (timestamp2 - timestamp1)
+        uint256 priceDiff = second1DaySnapShot_Price0Cumulative - first1DaySnapShot_Price0Cumulative;
+        uint32 timeDiff = second1DaySnapShot_TimeStamp - first1DaySnapShot_TimeStamp;
+        
+        oneDayTwap = uint224(priceDiff / timeDiff);
         return (oneDayTwap);
     }
     //**       ONE DAY TWAP END      **//
