@@ -29,13 +29,85 @@ contract MyMevBot {
     }
 
     function performArbitrage() public {
-        // your code here
+        // Flash loan USDC from the Uniswap V3 pool
+        // The test adds 3M USDT and 10 WETH to ETH/USDT pool
+        // This makes WETH very expensive in USDT terms (300k USDT per WETH)
+        uint256 usdcToBorrow = 50000 * 1e6; // Borrow 50k USDC
+        
+        IUniswapV3Pool(flashLenderPool).flash(
+            address(this),
+            usdcToBorrow,
+            0,
+            ""
+        );
     }
 
-    function uniswapV3FlashCallback(uint256 _fee0, uint256, bytes calldata data) external {
+    function uniswapV3FlashCallback(uint256 _fee0, uint256, bytes calldata) external {
         callMeCallMe();
 
-        // your code start here
+        // Get the amount of USDC we borrowed
+        uint256 usdcBorrowed = IERC20(usdc).balanceOf(address(this));
+        
+        // Calculate amount to repay (borrowed amount + fee)
+        uint256 usdcToRepay = usdcBorrowed + _fee0;
+        
+        // Arbitrage Strategy:
+        // The ETH/USDT pool has too much USDT, making WETH very expensive there
+        // We should buy WETH cheap in the normal pool and sell it expensive in the mispriced pool
+        
+        // Step 1: Swap USDC -> WETH on the correctly priced USDC/WETH pool (buy WETH at normal price)
+        IERC20(usdc).approve(router, usdcBorrowed);
+        
+        address[] memory path1 = new address[](2);
+        path1[0] = usdc;
+        path1[1] = weth;
+        
+        uint256[] memory amounts1 = IUniswapV2Router(router).swapExactTokensForTokens(
+            usdcBorrowed,
+            0,
+            path1,
+            address(this),
+            block.timestamp + 300
+        );
+        
+        uint256 wethReceived = amounts1[1];
+        
+        // Step 2: Swap WETH -> USDT on the mispriced ETH/USDT pool (sell WETH at inflated price)
+        IERC20(weth).approve(router, wethReceived);
+        
+        address[] memory path2 = new address[](2);
+        path2[0] = weth;
+        path2[1] = usdt;
+        
+        uint256[] memory amounts2 = IUniswapV2Router(router).swapExactTokensForTokens(
+            wethReceived,
+            0,
+            path2,
+            address(this),
+            block.timestamp + 300
+        );
+        
+        uint256 usdtReceived = amounts2[1];
+        
+        // Step 3: Swap USDT -> USDC (stablecoin swap, approximately 1:1)
+        IERC20(usdt).approve(router, usdtReceived);
+        
+        address[] memory path3 = new address[](2);
+        path3[0] = usdt;
+        path3[1] = usdc;
+        
+        IUniswapV2Router(router).swapExactTokensForTokens(
+            usdtReceived,
+            usdcToRepay,
+            path3,
+            address(this),
+            block.timestamp + 300
+        );
+        
+        // Repay the flash loan
+        IERC20(usdc).transfer(flashLenderPool, usdcToRepay);
+        
+        // Any remaining USDC is our profit
     }
 
     function callMeCallMe() private {
