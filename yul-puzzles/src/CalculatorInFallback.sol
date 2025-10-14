@@ -5,14 +5,34 @@ contract CalculatorInFallback {
     uint256 public result;
 
     fallback() external {
-        // your code here
-        // compare the function selector in the calldata with the any of the selectors below, then
-        // execute a logic based on the right function selector and store the result in `result` variable.
-        // assumming operations won't overflow
-
-        // add(uint256,uint256) -> 0x771602f7 (add two numbers and store result in storage)
-        // sub(uint256,uint256) -> 0xb67d77c5 (sub two numbers and store result in storage)
-        // mul(uint256,uint256) -> 0xc8a4ac9c (mul two numbers and store result in storage)
-        // div(uint256,uint256) -> 0xa391c15b (div two numbers and store result in storage)
+        assembly {
+            // Load the function selector (first 4 bytes of calldata)
+            let selector := shr(224, calldataload(0))
+            
+            // Load the two parameters (at positions 4 and 36)
+            let x := calldataload(4)
+            let y := calldataload(36)
+            
+            // Compare selector and execute appropriate operation
+            // add(uint256,uint256) -> 0x771602f7
+            if eq(selector, 0x771602f7) {
+                sstore(0, add(x, y))
+            }
+            
+            // sub(uint256,uint256) -> 0xb67d77c5
+            if eq(selector, 0xb67d77c5) {
+                sstore(0, sub(x, y))
+            }
+            
+            // mul(uint256,uint256) -> 0xc8a4ac9c
+            if eq(selector, 0xc8a4ac9c) {
+                sstore(0, mul(x, y))
+            }
+            
+            // div(uint256,uint256) -> 0xa391c15b
+            if eq(selector, 0xa391c15b) {
+                sstore(0, div(x, y))
+            }
+        }
     }
 }
