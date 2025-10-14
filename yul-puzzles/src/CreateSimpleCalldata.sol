@@ -4,11 +4,22 @@ pragma solidity ^0.8.13;
 contract CreateSimpleCalldata {
     function main(bytes calldata deploymentBytecode) external returns (address) {
         assembly {
-            // your code here
-            // create a contract using the deploymentBytecode
-            // return the address of the contract
-            // hint: use the `create` opcode
-            // hint: use calldatacopy to copy the deploymentBytecode to memory
+            // Get the length of the bytecode from calldata
+            let size := deploymentBytecode.length
+            
+            // Copy the bytecode from calldata to memory
+            // calldatacopy(destOffset, offset, size)
+            calldatacopy(0x00, deploymentBytecode.offset, size)
+            
+            // Use CREATE opcode: create(value, offset, size)
+            // value = 0 (no ETH sent with deployment)
+            // offset = 0x00 (pointer to bytecode in memory)
+            // size = size (length of bytecode)
+            let addr := create(0, 0x00, size)
+            
+            // Store address in memory and return
+            mstore(0x00, addr)
+            return(0x00, 0x20)
        }
     }
 }
