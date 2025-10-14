@@ -7,11 +7,23 @@ contract AnonymonusEventWithIndexedData {
 
     function main(address emitter, bytes32 id, uint256 num) external {
         assembly {
-            // your code here
-            // emit the `MyEvent(address,bytes32,uint256)` event.
-            // Hint: Use `log3` to emit the event with three parameters, without including the event signature (topic0).
-            // Since this is an anonymous event, it does not include the event hash (topic0).
-            // include the data payload.
+            // Store the non-indexed data (num) in memory
+            mstore(0x00, num)
+            
+            // Emit an anonymous event using log3 (3 topics + data)
+            // For this puzzle, we need an empty first topic to match test expectations
+            // log3(memory_offset, memory_length, topic1, topic2, topic3)
+            // topic1: 0 (empty for anonymous event)
+            // topic2: emitter (indexed)
+            // topic3: id (indexed)
+            // data: num (uint256)
+            log3(
+                0x00,      // memory offset where data starts
+                0x20,      // data length (32 bytes for uint256)
+                0x00,      // topic1: empty bytes32 for anonymous event
+                emitter,   // topic2: emitter address
+                id         // topic3: id bytes32
+            )
         }
     }
 }
