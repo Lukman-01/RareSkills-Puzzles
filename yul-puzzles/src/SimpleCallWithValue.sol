@@ -5,10 +5,22 @@ contract SimpleCallWithValue {
 
     function main(address t) external payable {
         assembly {
-            // your code here
-            // call "t.foo()" while sending msg.value
-            // hint: "foo()" has function selector 0xc2985578
-            // hint: callvalue() returns the value of the current call
+            // Store the function selector for foo() in memory
+            // foo() selector: 0xc2985578
+            // Left-shift to place selector at the beginning (first 4 bytes)
+            mstore(0x00, shl(224, 0xc2985578))
+            
+            // Get the value sent with this transaction
+            let value := callvalue()
+            
+            // Call t.foo() with the selector and value
+            // call(gas, address, value, argsOffset, argsSize, retOffset, retSize)
+            let success := call(gas(), t, value, 0x00, 0x04, 0, 0)
+            
+            // Optionally handle failure
+            if iszero(success) {
+                revert(0, 0)
+            }
        }
     }
 }
