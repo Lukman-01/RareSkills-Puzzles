@@ -5,9 +5,21 @@ contract SimpleCall {
 
     function main(address t) external payable {
         assembly {
-            // your code here
-            // call "t.foo()"
-            // hint: "foo()" has function selector 0xc2985578
+            // Store the function selector for foo() in memory
+            // foo() selector: 0xc2985578
+            mstore(0x00, 0xc2985578)
+            
+            // Prepare the calldata by left-shifting to place selector at the beginning
+            mstore(0x00, shl(224, 0xc2985578))
+            
+            // Call t.foo() with the selector
+            // call(gas, address, value, argsOffset, argsSize, retOffset, retSize)
+            let success := call(gas(), t, 0, 0x00, 0x04, 0, 0)
+            
+            // Optionally handle failure
+            if iszero(success) {
+                revert(0, 0)
+            }
        }
     }
 }
