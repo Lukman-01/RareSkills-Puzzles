@@ -5,9 +5,20 @@ contract SendBack {
 
     fallback() external payable {
         assembly {
-            // your code here
-            // whatever amount of ether is sent to the contract, send it back to the sender
-            // hint: use callvalue() to get the amount of ether sent to the contract
+            // Get the amount of ether sent
+            let amount := callvalue()
+            
+            // Get the sender address
+            let sender := caller()
+            
+            // Send the ether back to the sender
+            // call(gas, address, value, argsOffset, argsSize, retOffset, retSize)
+            let success := call(gas(), sender, amount, 0, 0, 0, 0)
+            
+            // Revert if the call failed
+            if iszero(success) {
+                revert(0, 0)
+            }
         }
     }
 }
