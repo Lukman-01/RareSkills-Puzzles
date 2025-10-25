@@ -10,8 +10,18 @@ contract ReturnSimpleStruct {
 
     function main(uint256 x, uint256 y) external pure returns (Point memory) {
         assembly {
-            // your code here
-            // return the struct: `Point{x,y}`
+            // Get free memory pointer
+            let ptr := mload(0x40)
+            
+            // Store struct fields
+            mstore(ptr, x)          // x coordinate
+            mstore(add(ptr, 0x20), y)  // y coordinate
+            
+            // Update free memory pointer
+            mstore(0x40, add(ptr, 0x40))
+            
+            // Return the struct (2 * 32 bytes = 64 bytes)
+            return(ptr, 0x40)
         }
     }
 }
