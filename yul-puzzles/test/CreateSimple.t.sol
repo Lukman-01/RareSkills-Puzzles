@@ -6,7 +6,7 @@ import {CreateSimple} from "../src/CreateSimple.sol";
 
 contract Simple {
     constructor() payable {}
-    function fallback() external payable {}
+    fallback() external payable {}
 }
 
 contract CreateSimpleTest is Test {
