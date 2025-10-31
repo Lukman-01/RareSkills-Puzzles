@@ -4,14 +4,38 @@ pragma solidity ^0.8.13;
 contract SquareRoot {
     function main(uint256 x) external pure returns (uint256) {
         assembly {
-            // your code here
-            // return the square root of x rounded down
-            // e.g. root(4) = 2 root(5) = 2 root(6) = 2, ..., root(8) = 2, root(9) = 3
-            // hint: https://www.youtube.com/watch?v=CnMBo5nG_zk
-            // hint: use x / 2 as initial guess
-            // hint: be careful of overflow
-            // hint: use a switch statement to handle 0, 1, and the general case
-            // hint: use break to exit the loop if the new guess is the same as the old guess
+            // Handle special cases
+            switch x
+            case 0 {
+                mstore(0x00, 0)
+                return(0x00, 0x20)
+            }
+            case 1 {
+                mstore(0x00, 1)
+                return(0x00, 0x20)
+            }
+            default {
+                // Newton's method (Babylonian method)
+                // Start with initial guess: x / 2
+                let guess := div(x, 2)
+                
+                // Iterate until convergence
+                for { } gt(guess, 0) { } {
+                    // Calculate new guess: (guess + x/guess) / 2
+                    let newGuess := div(add(guess, div(x, guess)), 2)
+                    
+                    // Check for convergence (if guess doesn't change)
+                    if iszero(lt(newGuess, guess)) {
+                        break
+                    }
+                    
+                    guess := newGuess
+                }
+                
+                // Return the result
+                mstore(0x00, guess)
+                return(0x00, 0x20)
+            }
         }
     }
 }
