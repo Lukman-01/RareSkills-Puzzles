@@ -5,12 +5,16 @@ contract SendEther {
 
     function main(address payable to, uint256 amount) external payable {
         assembly {
-            // your code here
-            // send `amount` of ether to `to`
-            // assume `amount` is less than or equal to the contract balance
-            // assume `amount` is in wei
-            // hint: use the `call` opcode: https://docs.soliditylang.org/en/latest/yul.html#evm-dialect
-            // hint: use the `gas` opcode to get the gas left
+            // call(gas, address, value, argsOffset, argsSize, retOffset, retSize)
+            // Send amount of ether to 'to' address
+            // We don't need to send any calldata, so argsOffset and argsSize are 0
+            // We don't expect any return data, so retOffset and retSize are 0
+            let success := call(gas(), to, amount, 0, 0, 0, 0)
+            
+            // Optionally check if call was successful and revert if not
+            if iszero(success) {
+                revert(0, 0)
+            }
         }
     }
 }
