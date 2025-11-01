@@ -6,7 +6,7 @@ import {CreateSimpleCalldata} from "../src/CreateSimpleCalldata.sol";
 
 contract Simple {
     constructor() payable {}
-    function fallback() external payable {}
+    fallback() external payable {}
 }
 
 contract CreateSimpleCalldataTest is Test {
